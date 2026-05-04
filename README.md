@@ -1,5 +1,5 @@
 # BEcon Material
-Collection of lectures, homeworks, projects in Bachelor of Economics (English Program), Kasetsart University
+Collection of lectures, notes, homeworks, projects, presentations on Bachelor of Economics (English Program), Kasetsart University
 
 ### Note
 - Uploaded by Kanokphan Sirithienthong, third-year student 
