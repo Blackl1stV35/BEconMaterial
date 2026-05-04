@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thai Economy — Knowledge Graph</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #08090e;
+    --surface: #0f1117;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --c-theory:   #8b5cf6;
+    --c-crisis:   #10b981;
+    --c-monetary: #f59e0b;
+    --c-struct:   #ef4444;
+    --c-intl:     #3b82f6;
+    --c-centre:   #e2e8f0;
+  }
+
+  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
+
+  body { font-family: 'Syne', sans-serif; color: var(--text); }
+
+  /* ── canvas ── */
+  #graph { width: 100vw; height: 100vh; display: block; }
+
+  /* ── UI overlay ── */
+  #ui {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none; z-index: 10;
+  }
+
+  /* header */
+  #header {
+    position: absolute; top: 24px; left: 28px;
+    pointer-events: all;
+  }
+  #header h1 {
+    font-size: 18px; font-weight: 800; letter-spacing: -0.02em;
+    color: var(--text); line-height: 1.1;
+  }
+  #header p {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--muted); margin-top: 4px; letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* legend */
+  #legend {
+    position: absolute; top: 24px; right: 24px;
+    background: rgba(15,17,23,0.88);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px;
+    pointer-events: all; backdrop-filter: blur(8px);
+    min-width: 150px;
+  }
+  #legend h3 {
+    font-size: 9px; font-family: 'DM Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); margin-bottom: 9px;
+  }
+  .leg-item {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px; cursor: pointer;
+    opacity: 1; transition: opacity 0.2s;
+  }
+  .leg-item:hover { opacity: 0.75; }
+  .leg-dot {
+    width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  }
+  .leg-label { font-size: 11px; color: var(--text); font-weight: 600; }
+
+  /* search */
+  #search-wrap {
+    position: absolute; bottom: 28px; left: 50%;
+    transform: translateX(-50%);
+    pointer-events: all;
+    display: flex; gap: 8px; align-items: center;
+  }
+  #search {
+    background: rgba(15,17,23,0.9);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--text); outline: none; width: 260px;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.2s;
+  }
+  #search::placeholder { color: var(--muted); }
+  #search:focus { border-color: rgba(255,255,255,0.2); }
+  #search-clear {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px;
+    color: var(--muted); font-size: 12px;
+    cursor: pointer; font-family: 'DM Mono', monospace;
+    transition: all 0.15s;
+  }
+  #search-clear:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+  /* hint */
+  #hint {
+    position: absolute; bottom: 28px; right: 24px;
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--muted); text-align: right; line-height: 1.8;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  /* node count */
+  #stats {
+    position: absolute; bottom: 28px; left: 28px;
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--muted); letter-spacing: 0.05em;
+    pointer-events: none;
+  }
+
+  /* ── tooltip / detail panel ── */
+  #panel {
+    position: absolute; top: 50%; right: 24px;
+    transform: translateY(-50%);
+    width: 280px;
+    background: rgba(15,17,23,0.94);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px;
+    pointer-events: all; backdrop-filter: blur(12px);
+    display: none;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(calc(-50% + 8px)); } to { opacity:1; transform:translateY(-50%); } }
+  #panel-close {
+    position: absolute; top: 12px; right: 12px;
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 14px; line-height: 1;
+  }
+  #panel-close:hover { color: var(--text); }
+  #panel-tag {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  #panel-title {
+    font-size: 15px; font-weight: 700; margin-bottom: 12px;
+    line-height: 1.3; color: var(--text);
+  }
+  #panel-bullets {
+    list-style: none; margin-bottom: 12px;
+  }
+  #panel-bullets li {
+    font-size: 11.5px; color: rgba(232,234,240,0.8);
+    padding: 4px 0 4px 12px; position: relative;
+    line-height: 1.55; border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  #panel-bullets li::before {
+    content: '›'; position: absolute; left: 0;
+    color: var(--muted);
+  }
+  #panel-thai {
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px; padding: 10px 12px;
+    border-left: 2px solid currentColor;
+  }
+  #panel-thai-label {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 5px; opacity: 0.7;
+  }
+  #panel-thai-text {
+    font-size: 11px; line-height: 1.6;
+    color: rgba(232,234,240,0.75);
+  }
+  #panel-connections {
+    margin-top: 10px;
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
+  }
+
+  /* SVG node styles */
+  .node { cursor: pointer; }
+  .node circle { transition: r 0.2s; }
+  .node text { pointer-events: none; font-family: 'Syne', sans-serif; }
+  .link { stroke-opacity: 0.2; fill: none; }
+
+  /* glow filter on selected */
+  .node.selected circle { filter: url(#glow); }
+  .node.dimmed { opacity: 0.12; transition: opacity 0.3s; }
+  .link.dimmed { opacity: 0.03; transition: opacity 0.3s; }
+  .node.highlighted { opacity: 1; }
+  .link.highlighted { stroke-opacity: 0.55; }
+</style>
+</head>
+<body>
+
+<svg id="graph">
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-soft">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g id="zoom-layer">
+    <g id="links-layer"></g>
+    <g id="nodes-layer"></g>
+  </g>
+</svg>
+
+<div id="ui">
+  <div id="header">
+    <h1>Thai Economy<br>Knowledge Graph</h1>
+    <p>Econ Development · Final Exam</p>
+  </div>
+
+  <div id="legend">
+    <h3>Topics</h3>
+    <div class="leg-item" data-group="theory">
+      <div class="leg-dot" style="background:var(--c-theory)"></div>
+      <span class="leg-label">Theories</span>
+    </div>
+    <div class="leg-item" data-group="crisis">
+      <div class="leg-dot" style="background:var(--c-crisis)"></div>
+      <span class="leg-label">1997 Crisis</span>
+    </div>
+    <div class="leg-item" data-group="monetary">
+      <div class="leg-dot" style="background:var(--c-monetary)"></div>
+      <span class="leg-label">Monetary Policy</span>
+    </div>
+    <div class="leg-item" data-group="struct">
+      <div class="leg-dot" style="background:var(--c-struct)"></div>
+      <span class="leg-label">Structural Issues</span>
+    </div>
+    <div class="leg-item" data-group="intl">
+      <div class="leg-dot" style="background:var(--c-intl)"></div>
+      <span class="leg-label">International Econ</span>
+    </div>
+  </div>
+
+  <div id="search-wrap">
+    <input id="search" type="text" placeholder="Search nodes…" autocomplete="off">
+    <button id="search-clear">✕</button>
+  </div>
+
+  <div id="stats"></div>
+
+  <div id="hint">
+    Drag · Scroll to zoom<br>
+    Click node for details<br>
+    Double-click to focus
+  </div>
+
+  <div id="panel">
+    <button id="panel-close">✕</button>
+    <div id="panel-tag"></div>
+    <div id="panel-title"></div>
+    <ul id="panel-bullets"></ul>
+    <div id="panel-thai">
+      <div id="panel-thai-label">🇹🇭 Thailand Context</div>
+      <div id="panel-thai-text"></div>
+    </div>
+    <div id="panel-connections"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+const COLORS = {
+  centre:   '#e2e8f0',
+  theory:   '#8b5cf6',
+  crisis:   '#10b981',
+  monetary: '#f59e0b',
+  struct:   '#ef4444',
+  intl:     '#3b82f6',
+};
+
+const nodes = [
+  // ── CENTRE ──
+  { id:'centre', group:'centre', label:'Thai Economic\nDevelopment', size:28,
+    bullets:['Central node connecting all major topics','Covers development theories, financial crisis, monetary policy, structural issues, and international economics'],
+    thai:'All topics interconnect around Thailand\'s 60-year development journey from agricultural economy to upper-middle income country facing the middle-income trap.' },
+
+  // ── THEORIES ──
+  { id:'t-classical', group:'theory', label:'Classical\nTheory', size:15,
+    bullets:['Natural order → price, rent, affairs','Savings → investment → output → wages','Free trade exploits comparative advantage','Iron law of wages: wages → subsistence','Flaw: ignores tech change; population trap'],
+    thai:'Explains TH 1980–90s export boom (~8% GDP). Cannot explain urban-rural wage gap or Thailand 4.0 shift.' },
+  { id:'t-marx', group:'theory', label:"Marx's\nMaterialism", size:13,
+    bullets:['Society in continuous transformation','Feudalism → capitalism → socialism','Ruling class vs oppressed class','Reserve army disciplines wages','Superstructure reflects material base'],
+    thai:'Covers TH rural-urban class divisions & military-bureaucratic suppression of labour. But socialism never well-developed; interests may align.' },
+  { id:'t-rostow', group:'theory', label:"Rostow's\nStages", size:15,
+    bullets:['5 stages: traditional → preconditions → takeoff → maturity → mass consumption','Takeoff: I/NNP rises 5→10%, leading sector, institutions','Maturity: self-sustained, urbanised, skilled labour'],
+    thai:'TH map: preconditions (agri 1960s) → takeoff (industry 1980s) → drive to maturity (now). Critique: ignores dualism BKK vs Isan.' },
+  { id:'t-vicious', group:'theory', label:'Vicious\nCircle', size:14,
+    bullets:['Supply side: low income→low savings→low capital→low productivity','Demand side: low income→small market→no investment'],
+    thai:'Most evident in Isan: informal moneylenders, low agri productivity → TH govt broke it via BAAC credit, irrigation, village funds.' },
+  { id:'t-balanced', group:'theory', label:'Balanced vs\nUnbalanced Growth', size:14,
+    bullets:['Balanced (Nurkse/Rosenstein-Rodan): big push, synchronized investment','Unbalanced (Hirschman): create imbalances, backward & forward linkages'],
+    thai:'Eastern Seaboard = big push. Auto sector = Hirschman: Toyota/Honda → 100k+ parts suppliers + logistics = "Detroit of Asia".' },
+  { id:'t-oring', group:'theory', label:'O-Ring /\nCoord. Failure', size:14,
+    bullets:['One weak node destroys all value (Challenger analogy)','High-skill workers cluster together','State coordination required to upgrade multiple nodes'],
+    thai:'TH middle-income trap: weak STEM, low IP protection, unreliable logistics = O-ring failure. Thailand 4.0 = coordinated multi-node upgrade.' },
+  { id:'t-lewis', group:'theory', label:'Lewis-Fei-Ranis\nModel', size:15,
+    bullets:['MPLag ≈ 0; capitalist hires to MRPLk = wK','Surplus reinvested → productivity → more hiring','Commercialisation point: wT rises when labour scarce','Fei-Ranis: food price rise forces wage up sooner'],
+    thai:'Isan → Bangkok factories 1960–2000s. Commercialisation point hit ~2010s: 300-baht min wage, migration slowed, capital-intensive shift.' },
+  { id:'t-baran', group:'theory', label:"Baran's\nNeo-Marxism", size:12,
+    bullets:['Bourgeoisie too weak for independent accumulation','New Deal coalition breaks under socialist threat','Alliance with landed interests + foreign capital','Productive investment → politically impossible'],
+    thai:'Partial fit: TH military-business nexus. But refuted by CP Group & SCG: productive capital accumulation, not pure rent-seeking.' },
+  { id:'t-dependency', group:'theory', label:'Dependency\nTheory', size:13,
+    bullets:['Metropole → satellite hierarchy extracts surplus','Integration → underdevelopment (Frank)','Satellites develop most when least dependent'],
+    thai:'TH refutes Frank: FDI integration accelerated growth. But: profits repatriated, limited R&D, 1997 crisis = capital flow shock.' },
+  { id:'t-washington', group:'theory', label:'Washington\nConsensus', size:14,
+    bullets:['Slow growth from nonmarket pricing & state intervention','Prescriptions: trade lib, FDI, privatisation, fiscal discipline','HK, MY, TH cited as success evidence'],
+    thai:'BIBF = Washington Consensus financial liberalisation → but no capital controls → 1997 crisis. Stiglitz: benefited few over many.' },
+  { id:'t-solow', group:'theory', label:'Solow +\nEndogenous Growth', size:15,
+    bullets:['Solow: Y = TKᵅLᵝ; predicts convergence','Problem: tech exogenous, perfect competition assumed','Endogenous: tech shaped by R&D policy & monopoly rents','Mankiw-Romer-Weil: add human capital'],
+    thai:'TH fails to converge → endogenous reality: low R&D (~1% GDP), middle-income trap. Thailand 4.0 = state shapes T variable.' },
+
+  // ── CRISIS ──
+  { id:'c-preboom', group:'crisis', label:'Pre-Crisis Boom\n1986–95', size:14,
+    bullets:['~8–9% GDP growth, FDI + short-term capital inflow','CA deficit: -5% to -8.5% of GDP','BOP surplus from capital inflow masked CA deficit','Reserves rose $14bn (1990) → $38.7bn (1996)'],
+    thai:'False stability: reserve build-up while maturity mismatch and baht overvaluation accumulated quietly.' },
+  { id:'c-bibf', group:'crisis', label:'BIBF & Financial\nLiberalisation', size:15,
+    bullets:['BOT: remove interest ceiling, reduce exchange controls','BIBF (1993): borrow cheap FX, re-lend in baht at spread','No hedging of FX risk (peg deemed permanent)','Funds → real estate & stock speculation'],
+    thai:'Core Washington Consensus reform without regulatory capacity → explosive FX liability build-up.' },
+  { id:'c-fc', group:'crisis', label:'Finance Company\nCollapse', size:13,
+    bullets:['91 FCs: borrowed IUOs short-term, lent to risky borrowers','BOT "no bank failure" → moral hazard','Mar 1997: 10 FCs asked to recapitalise → bank run','Jun 1997: 16 FCs suspended → massive run','Dec 1997: 56 of 58 suspended FCs permanently closed'],
+    thai:'Shadow banking collapse triggered panic before currency crisis even resolved.' },
+  { id:'c-attacks', group:'crisis', label:'Speculative Attacks\non Baht', size:15,
+    bullets:['4 waves: Nov 1996 → Feb → May → Jun 1997','BOT "swap": bought USD spot, sold forward → fake gross reserves','Wave 4 (Jun 1997): net reserves near zero → forced float Jul 2','Baht: 27→30→60 baht/USD within 6 months'],
+    thai:'Swap operation concealed real reserve depletion; final attack left no defence.' },
+  { id:'c-npl', group:'crisis', label:'NPL Crisis &\nBanking Sector', size:14,
+    bullets:['NPLs peaked >40% of total bank loans','FX depreciation raised baht cost of USD debts','Real estate collateral collapsed → banks cut lending','Strategic NPLs: firms deliberately defaulted to conserve cash','One CB closed, 4 taken over by FIDF/BOT'],
+    thai:'NPL resolution slow: outdated bankruptcy law, owner=manager problem, prefer restructuring over write-off.' },
+  { id:'c-resolution', group:'crisis', label:'NPL Resolution\nMechanisms', size:12,
+    bullets:['Bankruptcy law amended: rehab plans + faster foreclosure','CDRAC: voluntary public-private debt negotiation','TAMC (2001): bought multi-creditor NPLs using govt bonds','Banks merged; some gained foreign/govt ownership'],
+    thai:'Debt restructuring preferred over write-offs → slow debtor recovery. TAMC eventually cleared state bank balance sheets.' },
+  { id:'c-external', group:'crisis', label:'External Causes\n(3 factors)', size:14,
+    bullets:['1. Global EM capital flows + herd behaviour','2. Persistent CA deficit >5% of GDP','3. Export stagnation 1996: real baht appreciation, China competition, end of cheap-labour era'],
+    thai:'Export collapse from 20% growth → 0 was the trigger that crystallised all latent vulnerabilities.' },
+  { id:'c-domestic', group:'crisis', label:'Domestic Causes\n(4 factors)', size:15,
+    bullets:['1. Collateral-based loans, crony capitalism, high leverage','2. Impossible trilemma: fixed ER + free capital + independent monetary policy','3. BOT moral hazard + currency & maturity mismatch','4. Political instability: 4 govts, 10 fin. ministers, 4 BOT governors in 6 years'],
+    thai:'Refused proactive devaluation: feared import inflation + USD debt cost. Rationale short-run but catastrophic long-run.' },
+  { id:'c-imf', group:'crisis', label:'IMF Intervention\n& Contagion', size:13,
+    bullets:['$17bn rescue (IMF + bilateral)','IMF conditionality: fiscal austerity + tight monetary = pro-cyclical','Contagion: Indonesia, Malaysia, Singapore, S. Korea','Political: PM Chavalit → PM Chuan'],
+    thai:'IMF austerity during recession = Washington Consensus failure. Contagion spread to structurally similar neighbours.' },
+  { id:'c-recovery', group:'crisis', label:'Recovery &\nLessons Learned', size:14,
+    bullets:['Baht depreciation → export price competitiveness','Trade surplus since 1998; CA surplus through 2004','GDP: -10.5% (1998) → +4.4% (1999) → +7.0% (2003)','Post-crisis: flexible ER, prudential regulation, deposit insurance'],
+    thai:'Export-led recovery proved resilience. Lesson: financial liberalisation requires institutional safeguards first.' },
+
+  // ── MONETARY ──
+  { id:'m-trilemma', group:'monetary', label:'Impossible\nTrilemma', size:16,
+    bullets:['Cannot simultaneously: fixed ER + free capital + independent monetary policy','Thailand tried all 3 in 1990s','Sterilisation only partially effective'],
+    thai:'BIBF opened capital mobility; fixed peg removed ER flexibility; monetary policy became ineffective. Collapse was structurally predetermined.' },
+  { id:'m-failure', group:'monetary', label:'Traditional Policy\nFailure', size:13,
+    bullets:['Interest-rate-only approach insufficient for financial stability','Inflation targeting alone missed financial fragility','2008 GFC confirmed: price stability ≠ financial stability','3C challenges: capital flow, connectedness, competitiveness'],
+    thai:'BOT recognised pure inflation targeting ignored asset price bubbles — proximate cause of 1997.' },
+  { id:'m-3pillar', group:'monetary', label:'3-Pillar Policy\nFramework', size:15,
+    bullets:['Pillar 1: Flexible ER (not a demand tool) → improves LR structure','Pillar 2: Macroprudential policy (rule-based)','Pillar 3: Policy interest rate → anchor price stability','Goal: financial stability + sustained LR growth'],
+    thai:"BOT's proposed framework post-1997: coordinate all 3 instruments rather than relying on interest rate alone." },
+  { id:'m-macro', group:'monetary', label:'Macroprudential\nTools (BIS)', size:14,
+    bullets:['Supervise financial system as whole, not individual institutions','Tools: LTV caps, counter-cyclical capital buffers, dynamic provisioning, leverage caps','Pre-constrained BS → less explosive boom-bust feedback','Implement on rule-based basis (not discretion)'],
+    thai:'Directly addresses procyclicality that interest rate cannot reach. Small positive shocks → large crash (BOT empirically confirmed asymmetry).' },
+  { id:'m-er', group:'monetary', label:'ER as Structural\nTool', size:13,
+    bullets:['Competitive depreciation self-defeating (demand + supply side)','Currency depreciation subsidises inefficiency','Flexibility disciplines firms → real economy resilience','Evidence: Chile, JP/TW, LA/India, JP/Canada'],
+    thai:'TH should allow ER flexibility → stronger LR structure: ↑foreign debt ratio, deeper financial market, better competitiveness.' },
+  { id:'m-mix', group:'monetary', label:'Macro + IR:\nOptimal Mix', size:12,
+    bullets:['Not replacing interest rate — complementary architecture','Sequential + mutually reinforcing','Macroprudential manages financial cycle amplitude','Policy rate manages price cycle position'],
+    thai:'Proposed by Ananchotikul et al. (2010). Macroprudential stability = precondition for interest rate effectiveness.' },
+
+  // ── STRUCTURAL ──
+  { id:'s-agri', group:'struct', label:'Agriculture\nDiagnostics', size:15,
+    bullets:['Agri = 10% GDP, disproportionate share of labour','Labour productivity in manufacturing ~10–13x higher than agri','Output volatility: SD x7 higher than non-agri','Future output growth depends on input accumulation — not sustainable'],
+    thai:'TH spent only USD 3.3/hectare on agri R&D in 1995 → underfunded relative to sector share. Thirtle et al. (2003): R&D = high returns + poverty reduction.' },
+  { id:'s-diversify', group:'struct', label:'Agri Export\nDiversification', size:13,
+    bullets:['1961: rice, rubber, jute, maize, cassava = 88.4% of agri exports','By 2000: fallen to 53% → diversified into rubber, palm oil, chicken, pineapple, sugar, tuna, shrimp','BCG matrix: rising star → cash cow → competitive erosion','Key: identify next rising star before current cash cow fades'],
+    thai:'ER depreciation not a sustainable competitive source. Need continuous product upgrading.' },
+  { id:'s-sps', group:'struct', label:'Non-Tariff Barriers\n(SPS Standards)', size:12,
+    bullets:['EU 2002: Nitrofuran/Chloramphenicol in TH shrimp/chicken → destroyed at EU ports','Avian Flu 2004: pivot frozen → cooked → processed chicken (higher value)','Food safety = dynamic ongoing capability, not one-time certification','Compliance cost falls on exporting-country producers who had no role in setting standards'],
+    thai:'TH had no own testing tech in 2002. Crisis forced value-addition — embed safety improvement as organisational capability.' },
+  { id:'s-labour', group:'struct', label:'Urban-Rural\nLinkage & Labour', size:13,
+    bullets:['~20% of agri workforce migrates urban (construction) during off-season','Harris-Todaro cannot fully explain this pattern','Baumol-Bowen: manufacturing wages raise agri labour cost beyond agri productivity → structural pressure','Farm profitability limited → private investment returns low'],
+    thai:'Policy: raise rural income directly + release enough labour to non-agri to prevent premature capital-intensive manufacturing.' },
+  { id:'s-trap', group:'struct', label:'Productivity Gap &\nMiddle-Income Trap', size:14,
+    bullets:['Agri grows slower → cannot release labour fast enough','High urban wages induce capital-intensive tech adoption → absorbs less labour','Widens urban-rural income gap → root cause of development trajectory'],
+    thai:'Trapped between low-wage competitors (VN, Cambodia) and high-innovation competitors (KR, TW). Structural transformation stalled.' },
+
+  // ── INTERNATIONAL ──
+  { id:'i-trade', group:'intl', label:'Asymmetric\nTrade Structure', size:14,
+    bullets:['Export: low-value-add, labour-intensive manufactured goods','Import: high-value-add capital goods, tech, intermediate inputs, energy','Rooted since Bowring Treaty (Rama 4)','Cannot generate high-value-add exports to offset import intensity'],
+    thai:'Export composition stuck at assembly, not design/engineering. Net FX gain narrows as import content of exports rises.' },
+  { id:'i-saving', group:'intl', label:'Low Domestic\nSaving & Investment', size:13,
+    bullets:['Cannot fund capital accumulation domestically','Depends on FDI + portfolio flows → CA balance sensitive to capital flow reversal','Low household saving → limited loanable funds pool','Case study 1997: BIBF offshore borrowing → long-term investment → crash'],
+    thai:'Vicious circle: low saving → FDI dependency → vulnerable to sudden stops. Solow: raising saving rate → higher steady-state capital per worker.' },
+  { id:'i-productivity', group:'intl', label:'Low Labour\nProductivity', size:13,
+    bullets:['Baumol-Bowen: manufacturing wages rise faster than agri productivity can support','Rural migrants absorb into informal construction/services','Misallocation: housing pressure, real estate boom, informal sector growth'],
+    thai:'Root: faster productivity growth in non-agri pulls wages above what farm output can sustain → persistent rural-urban divide.' },
+  { id:'i-demand', group:'intl', label:'Limited Domestic\nDemand (AD)', size:12,
+    bullets:['Constraint: income distribution + population size','Isan = largest agri region, poorest → suppressed demand','Govt programs → household debt expansion without income growth','High-income MPS high; low-income spend on domestic goods → redistribution raises effective demand'],
+    thai:'Risk: pro-poor transfer programs if not designed carefully → household debt accumulation rather than sustainable demand expansion.' },
+  { id:'i-fdi', group:'intl', label:'FDI Dependency\nRisks', size:14,
+    bullets:['FDI brought capital, tech transfer, export capacity (electronics, auto, food)','But: wages rose → production relocating to VN, Cambodia, Indonesia','Limited domestic R&D → cannot retain tech advantage','Knowledge spillover conditional on domestic absorptive capacity'],
+    thai:'Dependency trap: rely on FDI → FDI leaves as costs rise → no domestic innovation base. Build absorptive capacity before FDI moves on.' },
+  { id:'i-policy', group:'intl', label:'Policy Recommendations\n(Theory Applied)', size:14,
+    bullets:['Ricardo: shift toward capital+knowledge-intensive exports','Solow: raise saving rate → expand formal pension + capital markets','Lewis: upgrade agri R&D, irrigation, land titling','Keynesian AD: raise min wage + social protection = domestically-led growth','Endogenous: university-industry R&D, domestic VC, selective FDI'],
+    thai:'Goal: move from pure export-led (FDI-dependent) to balanced domestically-led growth with innovation as long-run engine.' },
+  { id:'i-democracy', group:'intl', label:'Democratic\nInstability Costs', size:11,
+    bullets:['Instability raises risk premium demanded by foreign investors','Disrupts continuity of development planning','Undermines credibility of regulatory commitment','ER policy, trade agreements, investment promotion require institutional continuity'],
+    thai:'Consistent with Baran\'s political economy: coalition instability → policy discontinuity → suboptimal long-run economic trajectory.' },
+];
+
+// ── LINKS (conceptual connections) ──────────────────────────────────────────
+const links = [
+  // centre → hubs
+  {source:'centre', target:'t-solow'},
+  {source:'centre', target:'c-attacks'},
+  {source:'centre', target:'m-trilemma'},
+  {source:'centre', target:'s-trap'},
+  {source:'centre', target:'i-fdi'},
+
+  // theory internal
+  {source:'t-classical', target:'t-vicious'},
+  {source:'t-classical', target:'t-lewis'},
+  {source:'t-classical', target:'t-washington'},
+  {source:'t-marx', target:'t-baran'},
+  {source:'t-marx', target:'t-dependency'},
+  {source:'t-rostow', target:'t-vicious'},
+  {source:'t-rostow', target:'t-balanced'},
+  {source:'t-vicious', target:'t-balanced'},
+  {source:'t-vicious', target:'t-lewis'},
+  {source:'t-lewis', target:'t-oring'},
+  {source:'t-balanced', target:'t-oring'},
+  {source:'t-baran', target:'t-dependency'},
+  {source:'t-washington', target:'t-solow'},
+  {source:'t-solow', target:'t-oring'},
+  {source:'t-dependency', target:'t-washington'},
+
+  // crisis internal
+  {source:'c-preboom', target:'c-bibf'},
+  {source:'c-bibf', target:'c-fc'},
+  {source:'c-bibf', target:'c-attacks'},
+  {source:'c-fc', target:'c-npl'},
+  {source:'c-attacks', target:'c-npl'},
+  {source:'c-npl', target:'c-resolution'},
+  {source:'c-external', target:'c-attacks'},
+  {source:'c-domestic', target:'c-attacks'},
+  {source:'c-domestic', target:'c-fc'},
+  {source:'c-npl', target:'c-imf'},
+  {source:'c-imf', target:'c-recovery'},
+  {source:'c-preboom', target:'c-external'},
+  {source:'c-preboom', target:'c-domestic'},
+
+  // monetary internal
+  {source:'m-trilemma', target:'m-3pillar'},
+  {source:'m-failure', target:'m-3pillar'},
+  {source:'m-3pillar', target:'m-macro'},
+  {source:'m-3pillar', target:'m-er'},
+  {source:'m-macro', target:'m-mix'},
+  {source:'m-er', target:'m-mix'},
+
+  // structural internal
+  {source:'s-agri', target:'s-diversify'},
+  {source:'s-agri', target:'s-labour'},
+  {source:'s-agri', target:'s-sps'},
+  {source:'s-diversify', target:'s-sps'},
+  {source:'s-labour', target:'s-trap'},
+  {source:'s-agri', target:'s-trap'},
+
+  // international internal
+  {source:'i-trade', target:'i-saving'},
+  {source:'i-saving', target:'i-fdi'},
+  {source:'i-productivity', target:'i-demand'},
+  {source:'i-fdi', target:'i-policy'},
+  {source:'i-demand', target:'i-policy'},
+  {source:'i-democracy', target:'i-fdi'},
+  {source:'i-trade', target:'i-productivity'},
+  {source:'i-saving', target:'i-productivity'},
+
+  // cross-topic connections
+  {source:'t-washington', target:'c-bibf'},
+  {source:'t-washington', target:'c-imf'},
+  {source:'t-lewis', target:'s-labour'},
+  {source:'t-lewis', target:'s-trap'},
+  {source:'t-vicious', target:'s-agri'},
+  {source:'t-solow', target:'i-saving'},
+  {source:'t-solow', target:'i-policy'},
+  {source:'t-dependency', target:'i-fdi'},
+  {source:'t-baran', target:'i-democracy'},
+  {source:'t-oring', target:'s-trap'},
+  {source:'t-balanced', target:'s-agri'},
+  {source:'m-trilemma', target:'c-domestic'},
+  {source:'m-trilemma', target:'c-bibf'},
+  {source:'m-failure', target:'c-recovery'},
+  {source:'m-er', target:'i-trade'},
+  {source:'m-macro', target:'c-resolution'},
+  {source:'c-recovery', target:'i-trade'},
+  {source:'c-bibf', target:'i-saving'},
+  {source:'s-trap', target:'i-productivity'},
+  {source:'s-labour', target:'i-productivity'},
+  {source:'t-rostow', target:'s-agri'},
+  {source:'t-classical', target:'i-trade'},
+];
+
+// ── RENDER ──────────────────────────────────────────────────────────────────
+const W = window.innerWidth, H = window.innerHeight;
+
+const svg = d3.select('#graph')
+  .attr('width', W).attr('height', H);
+
+const zoomLayer = d3.select('#zoom-layer');
+
+// zoom
+const zoom = d3.zoom()
+  .scaleExtent([0.25, 3.5])
+  .on('zoom', e => zoomLayer.attr('transform', e.transform));
+svg.call(zoom);
+svg.call(zoom.translateTo, W/2, H/2);
+
+// colour helper
+function col(group) { return COLORS[group] || '#888'; }
+
+// force simulation
+const sim = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(links).id(d => d.id).distance(d => {
+    if (d.source.group === 'centre' || d.target.group === 'centre') return 180;
+    if (d.source.group !== d.target.group) return 160;
+    return 100;
+  }).strength(0.4))
+  .force('charge', d3.forceManyBody().strength(d => d.group==='centre' ? -800 : -280))
+  .force('center', d3.forceCenter(W/2, H/2))
+  .force('collision', d3.forceCollide().radius(d => d.size + 22))
+  .force('x', d3.forceX(W/2).strength(0.03))
+  .force('y', d3.forceY(H/2).strength(0.03));
+
+// links
+const linkSel = d3.select('#links-layer')
+  .selectAll('line')
+  .data(links).join('line')
+  .attr('class', 'link')
+  .attr('stroke', d => {
+    const sg = typeof d.source === 'object' ? d.source.group : d.source;
+    const tg = typeof d.target === 'object' ? d.target.group : d.target;
+    if (sg === tg) return col(sg);
+    return '#444';
+  })
+  .attr('stroke-width', d => {
+    const sg = typeof d.source === 'object' ? d.source.group : d.source;
+    const tg = typeof d.target === 'object' ? d.target.group : d.target;
+    return sg === tg ? 1.2 : 0.7;
+  });
+
+// nodes
+const nodeSel = d3.select('#nodes-layer')
+  .selectAll('g')
+  .data(nodes).join('g')
+  .attr('class', 'node')
+  .call(d3.drag()
+    .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+    .on('drag',  (e, d) => { d.fx=e.x; d.fy=e.y; })
+    .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; })
+  )
+  .on('click', onNodeClick)
+  .on('dblclick', onNodeDblClick);
+
+// background glow circle
+nodeSel.append('circle')
+  .attr('r', d => d.size + 8)
+  .attr('fill', d => col(d.group))
+  .attr('opacity', 0.06)
+  .attr('filter', 'url(#glow-soft)');
+
+// main circle
+nodeSel.append('circle')
+  .attr('r', d => d.size)
+  .attr('fill', d => {
+    if (d.group === 'centre') return '#1e1b4b';
+    return col(d.group) + '22';
+  })
+  .attr('stroke', d => col(d.group))
+  .attr('stroke-width', d => d.group === 'centre' ? 1.8 : 1.0)
+  .attr('stroke-opacity', 0.9);
+
+// label lines (split on \n)
+nodeSel.each(function(d) {
+  const g = d3.select(this);
+  const lines = d.label.split('\n');
+  const lineH = d.group === 'centre' ? 13 : 10;
+  const offset = -(lines.length - 1) * lineH / 2;
+  lines.forEach((line, i) => {
+    g.append('text')
+      .attr('y', offset + i * lineH)
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'central')
+      .attr('font-size', d.group === 'centre' ? '10px' : '8px')
+      .attr('font-weight', d.group === 'centre' ? '700' : '600')
+      .attr('fill', d.group === 'centre' ? '#c7c2ff' : col(d.group))
+      .attr('opacity', 0.95)
+      .text(line);
+  });
+});
+
+// simulation tick
+sim.on('tick', () => {
+  linkSel
+    .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  nodeSel.attr('transform', d => `translate(${d.x},${d.y})`);
+});
+
+// stats
+document.getElementById('stats').textContent =
+  `${nodes.length} nodes · ${links.length} connections`;
+
+// ── INTERACTION ─────────────────────────────────────────────────────────────
+let selectedId = null;
+
+function onNodeClick(e, d) {
+  e.stopPropagation();
+  selectedId = d.id;
+  showPanel(d);
+  highlightConnected(d.id);
+}
+
+function onNodeDblClick(e, d) {
+  e.stopPropagation();
+  const t = d3.zoomIdentity.translate(W/2 - d.x, H/2 - d.y).scale(1.4);
+  svg.transition().duration(500).call(zoom.transform, t);
+}
+
+svg.on('click', () => {
+  closePanel();
+  clearHighlight();
+  selectedId = null;
+});
+
+function highlightConnected(id) {
+  const connected = new Set([id]);
+  links.forEach(l => {
+    if (l.source.id === id) connected.add(l.target.id);
+    if (l.target.id === id) connected.add(l.source.id);
+  });
+  nodeSel.classed('dimmed', d => !connected.has(d.id));
+  nodeSel.classed('highlighted', d => connected.has(d.id));
+  linkSel.classed('dimmed', d => !(d.source.id === id || d.target.id === id));
+  linkSel.classed('highlighted', d => d.source.id === id || d.target.id === id);
+}
+
+function clearHighlight() {
+  nodeSel.classed('dimmed', false).classed('highlighted', false);
+  linkSel.classed('dimmed', false).classed('highlighted', false);
+}
+
+function showPanel(d) {
+  const panel = document.getElementById('panel');
+  const c = col(d.group);
+  document.getElementById('panel-tag').style.color = c;
+  document.getElementById('panel-tag').textContent =
+    ({theory:'DEVELOPMENT THEORY', crisis:'1997 CRISIS', monetary:'MONETARY POLICY',
+      struct:'STRUCTURAL ISSUE', intl:'INTERNATIONAL ECON', centre:'CENTRAL CONCEPT'})[d.group] || d.group.toUpperCase();
+  document.getElementById('panel-title').textContent = d.label.replace('\n', ' ');
+  const ul = document.getElementById('panel-bullets');
+  ul.innerHTML = d.bullets.map(b => `<li>${b}</li>`).join('');
+  document.getElementById('panel-thai').style.color = c;
+  document.getElementById('panel-thai-label').style.color = c;
+  document.getElementById('panel-thai-text').textContent = d.thai || '';
+  const connCount = links.filter(l => l.source.id === d.id || l.target.id === d.id).length;
+  document.getElementById('panel-connections').textContent = `${connCount} connection${connCount!==1?'s':''}`;
+  panel.style.display = 'block';
+}
+
+function closePanel() {
+  document.getElementById('panel').style.display = 'none';
+}
+
+document.getElementById('panel-close').addEventListener('click', e => {
+  e.stopPropagation();
+  closePanel();
+  clearHighlight();
+  selectedId = null;
+});
+
+// ── SEARCH ───────────────────────────────────────────────────────────────────
+document.getElementById('search').addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  if (!q) { clearHighlight(); return; }
+  const matched = new Set(nodes.filter(n => n.label.toLowerCase().includes(q) ||
+    n.bullets.some(b => b.toLowerCase().includes(q)) ||
+    (n.thai && n.thai.toLowerCase().includes(q))).map(n => n.id));
+  nodeSel.classed('dimmed', d => !matched.has(d.id));
+  nodeSel.classed('highlighted', d => matched.has(d.id));
+  linkSel.classed('dimmed', true).classed('highlighted', false);
+  // auto-focus first match
+  const first = nodes.find(n => matched.has(n.id));
+  if (first && first.x) {
+    const t = d3.zoomIdentity.translate(W/2 - first.x, H/2 - first.y).scale(1.2);
+    svg.transition().duration(600).call(zoom.transform, t);
+  }
+});
+
+document.getElementById('search-clear').addEventListener('click', () => {
+  document.getElementById('search').value = '';
+  clearHighlight();
+});
+
+// ── LEGEND FILTER ────────────────────────────────────────────────────────────
+document.querySelectorAll('.leg-item').forEach(item => {
+  item.addEventListener('click', function() {
+    const g = this.dataset.group;
+    const matched = new Set(nodes.filter(n => n.group === g || n.group === 'centre').map(n => n.id));
+    nodeSel.classed('dimmed', d => !matched.has(d.id));
+    linkSel.classed('dimmed', d => !(matched.has(d.source.id) && matched.has(d.target.id)));
+    setTimeout(() => { clearHighlight(); }, 2500);
+  });
+});
+</script>
+</body>
+</html>
