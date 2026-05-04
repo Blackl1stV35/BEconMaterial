@@ -1,0 +1,4488 @@
+------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  D:\StataNow19\group03_WellBeing.log
+  log type:  text
+ opened on:  16 Apr 2026, 15:10:56
+
+. 
+. * Import + disqualify
+. import delimited "google_form.tsv", ///
+>     encoding(UTF-8) clear varnames(nonames) delimiter(tab)
+(25 vars, 516 obs)
+
+. 
+. drop if _n == 1   
+(1 observation deleted)
+
+. 
+. rename v1  timestamp
+
+. rename v2  sector_raw
+
+. rename v3  age_raw
+
+. rename v4  gender_raw
+
+. rename v5  living_raw
+
+. rename v6  income_raw
+
+. rename v7  ladder_raw
+
+. rename v8  soc_hrs_raw
+
+. rename v9  pas_inf_raw
+
+. rename v10 pas_lux_raw
+
+. rename v11 pas_cmp_raw
+
+. rename v12 close_ppl_raw
+
+. rename v13 ppl_care_raw
+
+. rename v14 nbr_help_raw
+
+. rename v15 cfpb_hard_raw
+
+. rename v16 cfpb_sit_raw
+
+. rename v17 cfpb_wry_raw
+
+. rename v18 cfpb_emg_raw
+
+. rename v19 cfpb_mon_raw
+
+. rename v20 cfpb_con_raw
+
+. rename v21 who1_raw
+
+. rename v22 who2_raw
+
+. rename v23 who3_raw
+
+. rename v24 who4_raw
+
+. rename v25 who5_raw
+
+. 
+. drop if age_raw == "มากกว่า 45 ปี"
+(50 observations deleted)
+
+. drop if age_raw == "น้อยกว่า 18 ปี"
+(12 observations deleted)
+
+. drop if missing(gender_raw)  
+(42 observations deleted)
+
+. 
+. count
+  411
+
+. 
+. * Ordinal Encoding
+. destring ladder_raw, gen(SubStat) force
+ladder_raw: all characters numeric; SubStat generated as byte
+
+. label variable SubStat "MacArthur subjective social rank (1=bottom, 10=top)"
+
+. 
+. gen byte SOC_HRS = .
+(411 missing values generated)
+
+. replace SOC_HRS = 1 if soc_hrs_raw == "น้อยกว่า 1 ชั่วโมง"
+(21 real changes made)
+
+. replace SOC_HRS = 2 if soc_hrs_raw == "1 — 2 ชั่วโมง"
+(229 real changes made)
+
+. replace SOC_HRS = 3 if soc_hrs_raw == "2 — 4 ชั่วโมง"
+(95 real changes made)
+
+. replace SOC_HRS = 4 if soc_hrs_raw == "4 — 6 ชั่วโมง"
+(41 real changes made)
+
+. replace SOC_HRS = 5 if soc_hrs_raw == "มากกว่า 6 ชั่วโมง"
+(25 real changes made)
+
+. label variable SOC_HRS "Daily social media hours (1=<1hr, 5=>6hrs)"
+
+. 
+. foreach v in who1 who2 who3 who4 who5 {
+  2.     gen byte `v' = .
+  3.     replace `v' = 0 if `v'_raw == "ไม่เคยเลย"
+  4.     replace `v' = 1 if `v'_raw == "น้อยกว่าครึ่งหนึ่งของเวลา"
+  5.     replace `v' = 2 if `v'_raw == "บางครั้ง"
+  6.     replace `v' = 3 if `v'_raw == "มากกว่าครึ่งหนึ่งของเวลา"
+  7.     replace `v' = 4 if `v'_raw == "ส่วนใหญ่ของเวลา"
+  8.     replace `v' = 5 if `v'_raw == "ตลอด"
+  9. }
+(411 missing values generated)
+(13 real changes made)
+(59 real changes made)
+(113 real changes made)
+(70 real changes made)
+(123 real changes made)
+(33 real changes made)
+(411 missing values generated)
+(13 real changes made)
+(63 real changes made)
+(113 real changes made)
+(79 real changes made)
+(116 real changes made)
+(27 real changes made)
+(411 missing values generated)
+(13 real changes made)
+(81 real changes made)
+(111 real changes made)
+(96 real changes made)
+(83 real changes made)
+(27 real changes made)
+(411 missing values generated)
+(16 real changes made)
+(74 real changes made)
+(115 real changes made)
+(77 real changes made)
+(109 real changes made)
+(20 real changes made)
+(411 missing values generated)
+(11 real changes made)
+(72 real changes made)
+(116 real changes made)
+(76 real changes made)
+(109 real changes made)
+(27 real changes made)
+
+. 
+. foreach v in pas_inf pas_lux pas_cmp {
+  2.     gen byte `v' = .
+  3.     replace `v' = 1 if `v'_raw == "ไม่เคย"
+  4.     replace `v' = 2 if `v'_raw == "น้อย"
+  5.     replace `v' = 3 if `v'_raw == "บางครั้ง"
+  6.     replace `v' = 4 if `v'_raw == "บ่อยครั้ง"
+  7.     replace `v' = 5 if `v'_raw == "บ่อยมาก"
+  8. }
+(411 missing values generated)
+(36 real changes made)
+(144 real changes made)
+(77 real changes made)
+(117 real changes made)
+(37 real changes made)
+(411 missing values generated)
+(22 real changes made)
+(174 real changes made)
+(68 real changes made)
+(78 real changes made)
+(69 real changes made)
+(411 missing values generated)
+(21 real changes made)
+(196 real changes made)
+(69 real changes made)
+(57 real changes made)
+(68 real changes made)
+
+. 
+. foreach v in cfpb_hard cfpb_sit cfpb_wry {
+  2.     gen byte `v' = .
+  3.     replace `v' = 0 if `v'_raw == "ไม่เลย"
+  4.     replace `v' = 1 if `v'_raw == "น้อยมาก"
+  5.     replace `v' = 2 if `v'_raw == "บ้าง"
+  6.     replace `v' = 3 if `v'_raw == "ส่วนใหญ่"
+  7.     replace `v' = 4 if `v'_raw == "ตลอดเวลา"
+  8. }
+(411 missing values generated)
+(176 real changes made)
+(73 real changes made)
+(41 real changes made)
+(66 real changes made)
+(55 real changes made)
+(411 missing values generated)
+(197 real changes made)
+(65 real changes made)
+(65 real changes made)
+(78 real changes made)
+(6 real changes made)
+(411 missing values generated)
+(139 real changes made)
+(65 real changes made)
+(71 real changes made)
+(87 real changes made)
+(49 real changes made)
+
+. 
+. gen byte cfpb_emg = .
+(411 missing values generated)
+
+. replace cfpb_emg = 0 if cfpb_emg_raw == "ไม่เลย"
+(62 real changes made)
+
+. replace cfpb_emg = 1 if cfpb_emg_raw == "น้อยมาก"
+(74 real changes made)
+
+. replace cfpb_emg = 2 if cfpb_emg_raw == "บ้าง"
+(36 real changes made)
+
+. replace cfpb_emg = 3 if cfpb_emg_raw == "ส่วนใหญ่"
+(138 real changes made)
+
+. replace cfpb_emg = 4 if cfpb_emg_raw == "ตลอดเวลา"
+(101 real changes made)
+
+. 
+. gen byte cfpb_mon = (cfpb_mon_raw == "ตลอด") if !missing(cfpb_mon_raw)
+
+. gen byte cfpb_con = (cfpb_con_raw == "ตลอด") if !missing(cfpb_con_raw)
+
+. 
+. gen byte close_ppl = .
+(411 missing values generated)
+
+. replace close_ppl = 0 if close_ppl_raw == "ไม่มี"
+(35 real changes made)
+
+. replace close_ppl = 1 if close_ppl_raw == "1 — 2 คน"
+(228 real changes made)
+
+. replace close_ppl = 2 if close_ppl_raw == "3 — 5 คน"
+(122 real changes made)
+
+. replace close_ppl = 3 if close_ppl_raw == "มากกว่า 5 คน"
+(26 real changes made)
+
+. 
+. gen byte ppl_care = .
+(411 missing values generated)
+
+. replace ppl_care = 1 if ppl_care_raw == "ไม่มีเลย"
+(9 real changes made)
+
+. replace ppl_care = 2 if ppl_care_raw == "น้อย"
+(280 real changes made)
+
+. replace ppl_care = 3 if ppl_care_raw == "ไม่แน่ใจ"     // sara ae U+0E41
+(0 real changes made)
+
+. replace ppl_care = 3 if ppl_care_raw == "ไม่เเน่ใจ"    // double sara e variant in data
+(55 real changes made)
+
+. replace ppl_care = 4 if ppl_care_raw == "มาก"
+(59 real changes made)
+
+. replace ppl_care = 5 if ppl_care_raw == "มากที่สุด"
+(8 real changes made)
+
+. 
+. gen byte nbr_help = .
+(411 missing values generated)
+
+. replace nbr_help = 1 if nbr_help_raw == "ยากมาก"
+(14 real changes made)
+
+. replace nbr_help = 2 if nbr_help_raw == "ยาก"
+(248 real changes made)
+
+. replace nbr_help = 3 if nbr_help_raw == "เป็นไปได้"
+(88 real changes made)
+
+. replace nbr_help = 4 if nbr_help_raw == "ง่าย"
+(38 real changes made)
+
+. replace nbr_help = 5 if nbr_help_raw == "ง่ายมาก"
+(23 real changes made)
+
+. 
+. gen byte inc_num = .
+(411 missing values generated)
+
+. replace inc_num = 1 if income_raw == "น้อยกว่า 10,000 บาท"
+(18 real changes made)
+
+. replace inc_num = 2 if income_raw == "10,000 — 20,000 บาท"
+(40 real changes made)
+
+. replace inc_num = 3 if income_raw == "20,001 — 30,000 บาท"
+(70 real changes made)
+
+. replace inc_num = 4 if income_raw == "30,001 — 50,000 บาท"
+(144 real changes made)
+
+. replace inc_num = 5 if income_raw == "50,001 — 80,000 บาท"
+(87 real changes made)
+
+. replace inc_num = 6 if income_raw == "80,001 — 150,000 บาท"
+(37 real changes made)
+
+. replace inc_num = 7 if income_raw == "มากกว่า 150,000 บาท"
+(15 real changes made)
+
+. 
+. di "=== Encoding Completeness Check ==="
+=== Encoding Completeness Check ===
+
+. foreach v in who1 who2 who3 who4 who5 ///
+>              pas_inf pas_lux pas_cmp ///
+>              cfpb_hard cfpb_sit cfpb_wry cfpb_emg cfpb_mon cfpb_con ///
+>              close_ppl ppl_care nbr_help inc_num SOC_HRS {
+  2.     qui count if missing(`v')
+  3.     if r(N) > 0  di "  WARNING: `v' — " r(N) " unmatched values"
+  4.     else         di "  `v': OK"
+  5. }
+  who1: OK
+  who2: OK
+  who3: OK
+  who4: OK
+  who5: OK
+  pas_inf: OK
+  pas_lux: OK
+  pas_cmp: OK
+  cfpb_hard: OK
+  cfpb_sit: OK
+  cfpb_wry: OK
+  cfpb_emg: OK
+  cfpb_mon: OK
+  cfpb_con: OK
+  close_ppl: OK
+  ppl_care: OK
+  nbr_help: OK
+  inc_num: OK
+  SOC_HRS: OK
+
+. 
+. * Constructing index
+. egen who5_sum = rowtotal(who1 who2 who3 who4 who5)
+
+. gen  WHO5 = who5_sum * 4
+
+. label variable WHO5 "WHO-5 Well-Being Index (0-100)"
+
+. assert WHO5 >= 0 & WHO5 <= 100 if !missing(WHO5)
+
+. 
+. gen byte atrisk = (WHO5 <= 50)
+
+. label variable atrisk "WHO5 <= 50 = at-risk well-being"
+
+. 
+. egen PasExp = rowmean(pas_inf pas_lux pas_cmp)
+
+. label variable PasExp "Passive Social Media Exposure (mean 3 items, 1-5)"
+
+. assert PasExp >= 1 & PasExp <= 5 if !missing(PasExp)
+
+. 
+. egen PsySca = rowmean(cfpb_hard cfpb_sit cfpb_wry)
+
+. label variable PsySca "CFPB worry subscale: psychological scarcity (0-4)"
+
+. 
+. gen cfpb_emg_norm = cfpb_emg / 4
+
+. egen CFPB_liquid = rowmean(cfpb_mon cfpb_con cfpb_emg_norm)
+
+. label variable CFPB_liquid "CFPB liquidity subscale (0-1)"
+
+. 
+. gen HHInc = inc_num
+
+. label variable HHInc "Household income bracket (1=<10k THB, 7=>150k THB)"
+
+. 
+. gen close_ppl_std = close_ppl / 3
+
+. gen ppl_care_std  = (ppl_care - 1) / 4
+
+. gen nbr_help_std  = (nbr_help - 1) / 4
+
+. egen OSSS3 = rowmean(close_ppl_std ppl_care_std nbr_help_std)
+
+. label variable OSSS3 "Offline Social Support Scale (mean 3 normalised items, 0-1)"
+
+. 
+. gen PAS_x_LADDER = PasExp * SubStat
+
+. label variable PAS_x_LADDER "Interaction: PasExp x SubStat"
+
+. 
+. * ======================================================
+. * Centering conditional PasExp, SubStat
+. quietly summarize PasExp
+
+. gen PasExp_c = PasExp - r(mean)
+
+. 
+. quietly summarize SubStat
+
+. gen SubStat_c = SubStat - r(mean)
+
+. * ======================================================
+. 
+. * Constructing interaction term (PasExp x SubStat)
+. gen PasExpc_SubStatc = PasExp_c * SubStat_c
+
+. 
+. label variable PasExp_c          "PasExp centered at mean"
+
+. label variable SubStat_c         "SubStat centered at mean"
+
+. label variable PasExpc_SubStatc  "Centered PasExp x SubStat interaction"
+
+. 
+. di "=== Index Summary ==="
+=== Index Summary ===
+
+. summarize WHO5 PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS OSSS3
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+        WHO5 |        411    53.61557    23.81961          0        100
+      PasExp |        411    2.941606    1.106936          1          5
+      PsySca |        411    1.370641    1.322194          0          4
+ CFPB_liquid |        411    .5523114    .1521105          0   .9166667
+     SubStat |        411    6.238443    1.988156          1         10
+-------------+---------------------------------------------------------
+       HHInc |        411    4.004866    1.363273          1          7
+     SOC_HRS |        411    2.562044    .9565791          1          5
+       OSSS3 |        411    .3978778     .188118          0          1
+
+. 
+. * EFA for Adapted CFPB SubScale Structure
+. * Note: Justifying 2-SubScales
+. 
+. * EFA: Psychological Scarcity subscale (hard/sit/wry)
+. factor cfpb_hard cfpb_sit cfpb_wry, pcf factors(1)
+(obs=411)
+
+Factor analysis/correlation                      Number of obs    =        411
+    Method: principal-component factors          Retained factors =          1
+    Rotation: (unrotated)                        Number of params =          3
+
+    --------------------------------------------------------------------------
+         Factor  |   Eigenvalue   Difference        Proportion   Cumulative
+    -------------+------------------------------------------------------------
+        Factor1  |      2.72710      2.56830            0.9090       0.9090
+        Factor2  |      0.15880      0.04469            0.0529       0.9620
+        Factor3  |      0.11411            .            0.0380       1.0000
+    --------------------------------------------------------------------------
+    LR test: independent vs. saturated:  chi2(3)  = 1230.57 Prob>chi2 = 0.0000
+
+Factor loadings (pattern matrix) and unique variances
+
+    ---------------------------------------
+        Variable |  Factor1 |   Uniqueness 
+    -------------+----------+--------------
+       cfpb_hard |   0.9610 |      0.0764  
+        cfpb_sit |   0.9522 |      0.0932  
+        cfpb_wry |   0.9470 |      0.1032  
+    ---------------------------------------
+
+. estat kmo           // Kaiser-Meyer-Olkin measure of sampling adequacy
+
+Kaiser-Meyer-Olkin measure of sampling adequacy
+
+    -----------------------
+        Variable |     kmo 
+    -------------+---------
+       cfpb_hard |  0.7342 
+        cfpb_sit |  0.7771 
+        cfpb_wry |  0.8063 
+    -------------+---------
+         Overall |  0.7709 
+    -----------------------
+
+. alpha cfpb_hard cfpb_sit cfpb_wry, item std casewise
+
+Test scale = mean(standardized items)
+
+                                                            Average
+                             Item-test     Item-rest       interitem
+Item         |  Obs  Sign   correlation   correlation     correlation     alpha
+-------------+-----------------------------------------------------------------
+cfpb_hard    |  411    +       0.9607        0.9104          0.8427      0.9146
+cfpb_sit     |  411    +       0.9522        0.8920          0.8669      0.9287
+cfpb_wry     |  411    +       0.9473        0.8814          0.8809      0.9367
+-------------+-----------------------------------------------------------------
+Test scale   |                                               0.8635      0.9499
+-------------------------------------------------------------------------------
+
+. 
+. * EFA: Liquidity Constraint subscale (emg/mon/con)
+. gen cfpb_emg_rev = 4 - cfpb_emg
+
+. label variable cfpb_emg_rev "cfpb_emg reversed (0=full, 4=none)"
+
+. 
+. * cfpb_mon and cfpb_con are binary (1 = always covers; reverse for constraint)
+. gen cfpb_mon_rev = 1 - cfpb_mon
+
+. gen cfpb_con_rev = 1 - cfpb_con
+
+. label variable cfpb_mon_rev "cfpb_mon reversed (1=does NOT cover monthly)"
+
+. label variable cfpb_con_rev "cfpb_con reversed (1=NOT confident)"
+
+. 
+. factor cfpb_emg_rev cfpb_mon_rev cfpb_con_rev, pcf factors(1)
+(obs=411)
+
+Factor analysis/correlation                      Number of obs    =        411
+    Method: principal-component factors          Retained factors =          1
+    Rotation: (unrotated)                        Number of params =          3
+
+    --------------------------------------------------------------------------
+         Factor  |   Eigenvalue   Difference        Proportion   Cumulative
+    -------------+------------------------------------------------------------
+        Factor1  |      2.57839      2.33301            0.8595       0.8595
+        Factor2  |      0.24538      0.06916            0.0818       0.9413
+        Factor3  |      0.17622            .            0.0587       1.0000
+    --------------------------------------------------------------------------
+    LR test: independent vs. saturated:  chi2(3)  =  897.62 Prob>chi2 = 0.0000
+
+Factor loadings (pattern matrix) and unique variances
+
+    ---------------------------------------
+        Variable |  Factor1 |   Uniqueness 
+    -------------+----------+--------------
+    cfpb_emg_rev |   0.9360 |      0.1239  
+    cfpb_mon_rev |   0.9135 |      0.1655  
+    cfpb_con_rev |  -0.9315 |      0.1322  
+    ---------------------------------------
+
+. estat kmo
+
+Kaiser-Meyer-Olkin measure of sampling adequacy
+
+    -----------------------
+        Variable |     kmo 
+    -------------+---------
+    cfpb_emg_rev |  0.7281 
+    cfpb_mon_rev |  0.8058 
+    cfpb_con_rev |  0.7416 
+    -------------+---------
+         Overall |  0.7560 
+    -----------------------
+
+. alpha cfpb_emg_rev cfpb_mon_rev cfpb_con_rev, item std casewise
+
+Test scale = mean(standardized items)
+
+                                                            Average
+                             Item-test     Item-rest       interitem
+Item         |  Obs  Sign   correlation   correlation     correlation     alpha
+-------------+-----------------------------------------------------------------
+cfpb_emg_rev |  411    +       0.9353        0.8519          0.7662      0.8676
+cfpb_mon_rev |  411    +       0.9148        0.8087          0.8231      0.9030
+cfpb_con_rev |  411    -       0.9310        0.8428          0.7779      0.8751
+-------------+-----------------------------------------------------------------
+Test scale   |                                               0.7891      0.9182
+-------------------------------------------------------------------------------
+
+. 
+. * Drop fac2_liquid --> error
+. cap drop fac2_liquid      
+
+. 
+. * Cronbach Alpha
+. di _newline "--- 5A. WHO5 (5 items) ---"
+
+--- 5A. WHO5 (5 items) ---
+
+. alpha who1 who2 who3 who4 who5, item std casewise
+
+Test scale = mean(standardized items)
+
+                                                            Average
+                             Item-test     Item-rest       interitem
+Item         |  Obs  Sign   correlation   correlation     correlation     alpha
+-------------+-----------------------------------------------------------------
+who1         |  411    +       0.9184        0.8712          0.8198      0.9479
+who2         |  411    +       0.9194        0.8726          0.8191      0.9477
+who3         |  411    +       0.9225        0.8774          0.8167      0.9469
+who4         |  411    +       0.9232        0.8784          0.8162      0.9467
+who5         |  411    +       0.9338        0.8949          0.8080      0.9439
+-------------+-----------------------------------------------------------------
+Test scale   |                                               0.8160      0.9568
+-------------------------------------------------------------------------------
+
+. pwcorr who1 who2 who3 who4 who5, sig star(0.05)
+
+             |     who1     who2     who3     who4     who5
+-------------+---------------------------------------------
+        who1 |   1.0000 
+             |
+             |
+        who2 |   0.8242*  1.0000 
+             |   0.0000
+             |
+        who3 |   0.8121*  0.7979*  1.0000 
+             |   0.0000   0.0000
+             |
+        who4 |   0.7886*  0.7961*  0.8291*  1.0000 
+             |   0.0000   0.0000   0.0000
+             |
+        who5 |   0.8158*  0.8269*  0.8204*  0.8488*  1.0000 
+             |   0.0000   0.0000   0.0000   0.0000
+             |
+
+. 
+. di _newline "--- 5B. PasExp (3 items) ---"
+
+--- 5B. PasExp (3 items) ---
+
+. alpha pas_inf pas_lux pas_cmp, item std casewise
+
+Test scale = mean(standardized items)
+
+                                                            Average
+                             Item-test     Item-rest       interitem
+Item         |  Obs  Sign   correlation   correlation     correlation     alpha
+-------------+-----------------------------------------------------------------
+pas_inf      |  411    +       0.9257        0.8306          0.7685      0.8691
+pas_lux      |  411    +       0.9277        0.8350          0.7628      0.8654
+pas_cmp      |  411    +       0.9145        0.8072          0.7993      0.8885
+-------------+-----------------------------------------------------------------
+Test scale   |                                               0.7769      0.9126
+-------------------------------------------------------------------------------
+
+. pwcorr pas_inf pas_lux pas_cmp, sig star(0.05)
+
+             |  pas_inf  pas_lux  pas_cmp
+-------------+---------------------------
+     pas_inf |   1.0000 
+             |
+             |
+     pas_lux |   0.7993*  1.0000 
+             |   0.0000
+             |
+     pas_cmp |   0.7628*  0.7685*  1.0000 
+             |   0.0000   0.0000
+             |
+
+. 
+. di _newline "--- 5C. PsySca subscale (3 items) ---"
+
+--- 5C. PsySca subscale (3 items) ---
+
+. alpha cfpb_hard cfpb_sit cfpb_wry, item std casewise
+
+Test scale = mean(standardized items)
+
+                                                            Average
+                             Item-test     Item-rest       interitem
+Item         |  Obs  Sign   correlation   correlation     correlation     alpha
+-------------+-----------------------------------------------------------------
+cfpb_hard    |  411    +       0.9607        0.9104          0.8427      0.9146
+cfpb_sit     |  411    +       0.9522        0.8920          0.8669      0.9287
+cfpb_wry     |  411    +       0.9473        0.8814          0.8809      0.9367
+-------------+-----------------------------------------------------------------
+Test scale   |                                               0.8635      0.9499
+-------------------------------------------------------------------------------
+
+. pwcorr cfpb_hard cfpb_sit cfpb_wry, sig star(0.05)
+
+             | cfpb_h~d cfpb_sit cfpb_wry
+-------------+---------------------------
+   cfpb_hard |   1.0000 
+             |
+             |
+    cfpb_sit |   0.8809*  1.0000 
+             |   0.0000
+             |
+    cfpb_wry |   0.8669*  0.8427*  1.0000 
+             |   0.0000   0.0000
+             |
+
+. 
+. di _newline "--- 5D. CFPB all 6 items ---"
+
+--- 5D. CFPB all 6 items ---
+
+. alpha cfpb_hard cfpb_sit cfpb_wry cfpb_emg cfpb_mon cfpb_con, item std casewise
+
+Test scale = mean(standardized items)
+
+                                                            Average
+                             Item-test     Item-rest       interitem
+Item         |  Obs  Sign   correlation   correlation     correlation     alpha
+-------------+-----------------------------------------------------------------
+cfpb_hard    |  411    +       0.9569        0.9363          0.7716      0.9441
+cfpb_sit     |  411    +       0.9116        0.8710          0.7963      0.9513
+cfpb_wry     |  411    +       0.9061        0.8632          0.7993      0.9522
+cfpb_emg     |  411    -       0.9009        0.8558          0.8022      0.9530
+cfpb_mon     |  411    -       0.8932        0.8449          0.8064      0.9542
+cfpb_con     |  411    +       0.8989        0.8529          0.8033      0.9533
+-------------+-----------------------------------------------------------------
+Test scale   |                                               0.7965      0.9592
+-------------------------------------------------------------------------------
+
+. 
+. di _newline "--- 5E. OSSS3 (3 normalised items) ---"
+
+--- 5E. OSSS3 (3 normalised items) ---
+
+. alpha close_ppl_std ppl_care_std nbr_help_std, item std casewise
+
+Test scale = mean(standardized items)
+
+                                                            Average
+                             Item-test     Item-rest       interitem
+Item         |  Obs  Sign   correlation   correlation     correlation     alpha
+-------------+-----------------------------------------------------------------
+close_ppl_~d |  411    +       0.8002        0.5548          0.6208      0.7661
+ppl_care_std |  411    +       0.8616        0.6724          0.4676      0.6373
+nbr_help_std |  411    +       0.8361        0.6220          0.5312      0.6939
+-------------+-----------------------------------------------------------------
+Test scale   |                                               0.5399      0.7788
+-------------------------------------------------------------------------------
+
+. pwcorr close_ppl_std ppl_care_std nbr_help_std, sig star(0.05)
+
+             | close_~d ppl_ca~d nbr_he~d
+-------------+---------------------------
+close_ppl_~d |   1.0000 
+             |
+             |
+ppl_care_std |   0.5312*  1.0000 
+             |   0.0000
+             |
+nbr_help_std |   0.4676*  0.6208*  1.0000 
+             |   0.0000   0.0000
+             |
+
+. 
+. 
+. * CFA
+. di _newline "--- 6A. WHO5 (1 factor, 5 indicators) ---"
+
+--- 6A. WHO5 (1 factor, 5 indicators) ---
+
+. sem (WellBeing -> who1 who2 who3 who4 who5), method(ml) vce(robust)
+
+Endogenous variables
+  Measurement: who1 who2 who3 who4 who5
+
+Exogenous variables
+  Latent: WellBeing
+
+Fitting target model:
+Iteration 0:  Log pseudolikelihood = -2340.1765  
+Iteration 1:  Log pseudolikelihood = -2339.7137  
+Iteration 2:  Log pseudolikelihood = -2339.7112  
+Iteration 3:  Log pseudolikelihood = -2339.7112  
+
+Structural equation model                                  Number of obs = 411
+Estimation method: ml
+
+Log pseudolikelihood = -2339.7112
+
+ ( 1)  [who1]WellBeing = 1
+-------------------------------------------------------------------------------
+              |               Robust
+              | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+Measurement   |
+  who1        |
+    WellBeing |          1  (constrained)
+        _cons |    2.80292   .0646834    43.33   0.000     2.676143    2.929697
+  ------------+----------------------------------------------------------------
+  who2        |
+    WellBeing |   .9830191   .0311649    31.54   0.000     .9219371    1.044101
+        _cons |   2.737226   .0634133    43.16   0.000     2.612938    2.861514
+  ------------+----------------------------------------------------------------
+  who3        |
+    WellBeing |    .982075   .0297015    33.06   0.000     .9238611    1.040289
+        _cons |   2.574209   .0629845    40.87   0.000     2.450762    2.697657
+  ------------+----------------------------------------------------------------
+  who4        |
+    WellBeing |   .9953209   .0379723    26.21   0.000     .9208966    1.069745
+        _cons |   2.605839   .0635314    41.02   0.000      2.48132    2.730359
+  ------------+----------------------------------------------------------------
+  who5        |
+    WellBeing |   1.012428   .0332054    30.49   0.000      .947347     1.07751
+        _cons |   2.683698   .0634723    42.28   0.000     2.559295    2.808102
+--------------+----------------------------------------------------------------
+   var(e.who1)|   .3467781   .0565852                      .2518591    .4774695
+   var(e.who2)|   .3261591    .051993                       .238638    .4457788
+   var(e.who3)|    .306475   .0416881                      .2347528    .4001099
+   var(e.who4)|   .2989954   .0541707                      .2096272    .4264631
+   var(e.who5)|   .2489075   .0518817                      .1654305    .3745075
+var(WellBeing)|   1.368639   .0928478                       1.19824     1.56327
+-------------------------------------------------------------------------------
+
+. estat gof, stats(all)
+
+----------------------------------------------------------------------------
+Fit statistic        |      Value   Description
+---------------------+------------------------------------------------------
+Size of residuals    |
+                SRMR |      0.011   Standardized root mean squared residual
+                  CD |      0.957   Coefficient of determination
+----------------------------------------------------------------------------
+Note: model was fit with vce(robust); only stats(residuals) valid.
+
+. sem, standardized
+
+Structural equation model                                  Number of obs = 411
+Estimation method: ml
+
+Log pseudolikelihood = -2339.7112
+
+ ( 1)  [who1]WellBeing = 1
+-------------------------------------------------------------------------------
+              |               Robust
+ Standardized | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+Measurement   |
+  who1        |
+    WellBeing |   .8932224    .018073    49.42   0.000        .8578    .9286447
+        _cons |   2.140059   .0783275    27.32   0.000      1.98654    2.293578
+  ------------+----------------------------------------------------------------
+  who2        |
+    WellBeing |   .8956413   .0173588    51.60   0.000     .8616187    .9296639
+        _cons |    2.13176   .0776923    27.44   0.000     1.979486    2.284034
+  ------------+----------------------------------------------------------------
+  who3        |
+    WellBeing |   .9008732   .0138567    65.01   0.000     .8737145    .9280319
+        _cons |   2.018452   .0701372    28.78   0.000     1.880985    2.155918
+  ------------+----------------------------------------------------------------
+  who4        |
+    WellBeing |   .9051643   .0179406    50.45   0.000     .8700015    .9403272
+        _cons |   2.025664   .0729017    27.79   0.000      1.88278    2.168549
+  ------------+----------------------------------------------------------------
+  who5        |
+    WellBeing |   .9215798   .0167093    55.15   0.000     .8888302    .9543294
+        _cons |   2.088132    .072286    28.89   0.000     1.946454    2.229809
+--------------+----------------------------------------------------------------
+   var(e.who1)|   .2021538   .0322863                      .1478206    .2764578
+   var(e.who2)|   .1978267   .0310945                       .145376    .2692013
+   var(e.who3)|   .1884274   .0249663                       .145332     .244302
+   var(e.who4)|   .1806775   .0324783                      .1270263    .2569892
+   var(e.who5)|   .1506907   .0307979                      .1009531     .224933
+var(WellBeing)|          1          .                             .           .
+-------------------------------------------------------------------------------
+
+. 
+. di _newline "--- 6B. PasExp (1 factor, 3 indicators) ---"
+
+--- 6B. PasExp (1 factor, 3 indicators) ---
+
+. sem (MediaExp -> pas_inf pas_lux pas_cmp), method(ml) vce(robust)
+
+Endogenous variables
+  Measurement: pas_inf pas_lux pas_cmp
+
+Exogenous variables
+  Latent: MediaExp
+
+Fitting target model:
+Iteration 0:  Log pseudolikelihood = -1546.2153  
+Iteration 1:  Log pseudolikelihood = -1546.2153  
+
+Structural equation model                                  Number of obs = 411
+Estimation method: ml
+
+Log pseudolikelihood = -1546.2153
+
+ ( 1)  [pas_inf]MediaExp = 1
+-------------------------------------------------------------------------------
+              |               Robust
+              | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+Measurement   |
+  pas_inf     |
+     MediaExp |          1  (constrained)
+        _cons |   2.939173   .0572073    51.38   0.000     2.827048    3.051297
+  ------------+----------------------------------------------------------------
+  pas_lux     |
+     MediaExp |   1.064776   .0403152    26.41   0.000     .9857592    1.143792
+        _cons |   2.995134   .0604608    49.54   0.000     2.876633    3.113635
+  ------------+----------------------------------------------------------------
+  pas_cmp     |
+     MediaExp |   1.006231    .039364    25.56   0.000     .9290786    1.083383
+        _cons |   2.890511   .0598731    48.28   0.000     2.773162     3.00786
+--------------+----------------------------------------------------------------
+var(e.pas_inf)|   .2772327   .0405553                      .2081256    .3692865
+var(e.pas_lux)|   .2918112   .0467178                      .2132201    .3993704
+var(e.pas_cmp)|   .3918909   .0473784                      .3092128    .4966755
+ var(MediaExp)|   1.064566   .0728951                      .9308666    1.217469
+-------------------------------------------------------------------------------
+
+. estat gof, stats(all)
+
+----------------------------------------------------------------------------
+Fit statistic        |      Value   Description
+---------------------+------------------------------------------------------
+Size of residuals    |
+                SRMR |      0.000   Standardized root mean squared residual
+                  CD |      0.915   Coefficient of determination
+----------------------------------------------------------------------------
+Note: model was fit with vce(robust); only stats(residuals) valid.
+
+. sem, standardized
+
+Structural equation model                                  Number of obs = 411
+Estimation method: ml
+
+Log pseudolikelihood = -1546.2153
+
+ ( 1)  [pas_inf]MediaExp = 1
+-------------------------------------------------------------------------------
+              |               Robust
+ Standardized | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+Measurement   |
+  pas_inf     |
+     MediaExp |   .8907229   .0173758    51.26   0.000     .8566669    .9247789
+        _cons |   2.537356   .0730972    34.71   0.000     2.394088    2.680624
+  ------------+----------------------------------------------------------------
+  pas_lux     |
+     MediaExp |   .8973841   .0175398    51.16   0.000     .8630067    .9317615
+        _cons |   2.446528   .0572415    42.74   0.000     2.334337     2.55872
+  ------------+----------------------------------------------------------------
+  pas_cmp     |
+     MediaExp |   .8563672   .0194875    43.94   0.000     .8181723    .8945621
+        _cons |   2.384245     .05132    46.46   0.000     2.283659     2.48483
+--------------+----------------------------------------------------------------
+var(e.pas_inf)|   .2066127   .0309541                      .1540397    .2771287
+var(e.pas_lux)|   .1947018   .0314799                      .1418226    .2672972
+var(e.pas_cmp)|   .2666352    .033377                      .2086246    .3407765
+ var(MediaExp)|          1          .                             .           .
+-------------------------------------------------------------------------------
+
+. 
+. di _newline "--- 6C. PsySca subscale (1 factor, 3 indicators) ---"
+
+--- 6C. PsySca subscale (1 factor, 3 indicators) ---
+
+. sem (FinStress -> cfpb_hard cfpb_sit cfpb_wry), method(ml) vce(robust)
+
+Endogenous variables
+  Measurement: cfpb_hard cfpb_sit cfpb_wry
+
+Exogenous variables
+  Latent: FinStress
+
+Fitting target model:
+Iteration 0:  Log pseudolikelihood =  -1528.735  
+Iteration 1:  Log pseudolikelihood =  -1528.735  
+
+Structural equation model                                  Number of obs = 411
+Estimation method: ml
+
+Log pseudolikelihood = -1528.735
+
+ ( 1)  [cfpb_hard]FinStress = 1
+---------------------------------------------------------------------------------
+                |               Robust
+                | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+----------------+----------------------------------------------------------------
+Measurement     |
+  cfpb_hard     |
+      FinStress |          1  (constrained)
+          _cons |   1.394161   .0735731    18.95   0.000      1.24996    1.538361
+  --------------+----------------------------------------------------------------
+  cfpb_sit      |
+      FinStress |   .8038461   .0197369    40.73   0.000     .7651624    .8425298
+          _cons |    1.10219   .0608384    18.12   0.000     .9829487    1.221431
+  --------------+----------------------------------------------------------------
+  cfpb_wry      |
+      FinStress |   .9197838   .0258848    35.53   0.000     .8690506     .970517
+          _cons |   1.615572   .0707405    22.84   0.000     1.476923    1.754221
+----------------+----------------------------------------------------------------
+var(e.cfpb_hard)|   .2081832   .0516684                      .1279936    .3386126
+ var(e.cfpb_sit)|   .2179959   .0312125                      .1646547    .2886175
+ var(e.cfpb_wry)|   .3502908   .0424389                      .2762503    .4441756
+  var(FinStress)|    2.01115   .1130219                      1.801395    2.245329
+---------------------------------------------------------------------------------
+
+. estat gof, stats(all)
+
+----------------------------------------------------------------------------
+Fit statistic        |      Value   Description
+---------------------+------------------------------------------------------
+Size of residuals    |
+                SRMR |      0.000   Standardized root mean squared residual
+                  CD |      0.953   Coefficient of determination
+----------------------------------------------------------------------------
+Note: model was fit with vce(robust); only stats(residuals) valid.
+
+. sem, standardized
+
+Structural equation model                                  Number of obs = 411
+Estimation method: ml
+
+Log pseudolikelihood = -1528.735
+
+ ( 1)  [cfpb_hard]FinStress = 1
+---------------------------------------------------------------------------------
+                |               Robust
+   Standardized | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+----------------+----------------------------------------------------------------
+Measurement     |
+  cfpb_hard     |
+      FinStress |   .9519431   .0125206    76.03   0.000     .9274031    .9764831
+          _cons |   .9358399   .0395802    23.64   0.000     .8582641    1.013416
+  --------------+----------------------------------------------------------------
+  cfpb_sit      |
+      FinStress |   .9253912   .0109439    84.56   0.000     .9039417    .9468408
+          _cons |   .8947189    .039363    22.73   0.000     .8175689    .9718689
+  --------------+----------------------------------------------------------------
+  cfpb_wry      |
+      FinStress |   .9106428   .0120893    75.33   0.000     .8869482    .9343374
+          _cons |   1.127889   .0476212    23.68   0.000     1.034553    1.221225
+----------------+----------------------------------------------------------------
+var(e.cfpb_hard)|   .0938044   .0238379                       .057005    .1543595
+ var(e.cfpb_sit)|   .1436511   .0202547                      .1089657    .1893772
+ var(e.cfpb_wry)|   .1707296   .0220181                      .1325971    .2198283
+  var(FinStress)|          1          .                             .           .
+---------------------------------------------------------------------------------
+
+. 
+. di _newline "--- 6D. OSSS3 (1 factor, 3 normalised indicators) ---"
+
+--- 6D. OSSS3 (1 factor, 3 normalised indicators) ---
+
+. sem (SocSupp -> close_ppl_std ppl_care_std nbr_help_std), method(ml) vce(robust)
+
+Endogenous variables
+  Measurement: close_ppl_std ppl_care_std nbr_help_std
+
+Exogenous variables
+  Latent: SocSupp
+
+Fitting target model:
+Iteration 0:  Log pseudolikelihood =  263.76361  
+Iteration 1:  Log pseudolikelihood =  263.76361  
+
+Structural equation model                                  Number of obs = 411
+Estimation method: ml
+
+Log pseudolikelihood = 263.76361
+
+ ( 1)  [close_ppl_std]SocSupp = 1
+-------------------------------------------------------------------------------------
+                    |               Robust
+                    | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+--------------------+----------------------------------------------------------------
+Measurement         |
+  close_ppl_std     |
+            SocSupp |          1  (constrained)
+              _cons |   .4460665   .0118785    37.55   0.000      .422785     .469348
+  ------------------+----------------------------------------------------------------
+  ppl_care_std      |
+            SocSupp |   1.151136   .1284523     8.96   0.000     .8993738    1.402898
+              _cons |   .3643552   .0102994    35.38   0.000     .3441687    .3845418
+  ------------------+----------------------------------------------------------------
+  nbr_help_std      |
+            SocSupp |   1.111857   .1048567    10.60   0.000      .906342    1.317373
+              _cons |   .3832117   .0113006    33.91   0.000      .361063    .4053604
+--------------------+----------------------------------------------------------------
+var(e.close_ppl_std)|   .0347032   .0030903                      .0291454    .0413208
+ var(e.ppl_care_std)|    .012819   .0034572                       .007556    .0217478
+ var(e.nbr_help_std)|   .0237423   .0039569                      .0171262    .0329144
+        var(SocSupp)|   .0231476    .003959                      .0165547    .0323662
+-------------------------------------------------------------------------------------
+
+. estat gof, stats(all)
+
+----------------------------------------------------------------------------
+Fit statistic        |      Value   Description
+---------------------+------------------------------------------------------
+Size of residuals    |
+                SRMR |      0.000   Standardized root mean squared residual
+                  CD |      0.810   Coefficient of determination
+----------------------------------------------------------------------------
+Note: model was fit with vce(robust); only stats(residuals) valid.
+
+. sem, standardized
+
+Structural equation model                                  Number of obs = 411
+Estimation method: ml
+
+Log pseudolikelihood = 263.76361
+
+ ( 1)  [close_ppl_std]SocSupp = 1
+-------------------------------------------------------------------------------------
+                    |               Robust
+       Standardized | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+--------------------+----------------------------------------------------------------
+Measurement         |
+  close_ppl_std     |
+            SocSupp |   .6325554   .0415744    15.22   0.000     .5510711    .7140398
+              _cons |   1.854577   .0697691    26.58   0.000     1.717832    1.991322
+  ------------------+----------------------------------------------------------------
+  ppl_care_std      |
+            SocSupp |   .8397967   .0468008    17.94   0.000     .7480688    .9315246
+              _cons |   1.747106   .0443874    39.36   0.000     1.660108    1.834103
+  ------------------+----------------------------------------------------------------
+  nbr_help_std      |
+            SocSupp |   .7392831   .0461634    16.01   0.000     .6488045    .8297616
+              _cons |   1.674738   .0491748    34.06   0.000     1.578358    1.771119
+--------------------+----------------------------------------------------------------
+var(e.close_ppl_std)|   .5998736   .0525963                      .5051581     .712348
+ var(e.ppl_care_std)|   .2947415   .0786063                      .1747549    .4971108
+ var(e.nbr_help_std)|   .4534606   .0682556                        .33761    .6090651
+        var(SocSupp)|          1          .                             .           .
+-------------------------------------------------------------------------------------
+
+. 
+. di _newline "--- 6E. Full 3-construct model (discriminant validity) ---"
+
+--- 6E. Full 3-construct model (discriminant validity) ---
+
+. sem (WellBeing -> who1 who2 who3 who4 who5) ///
+>     (MediaExp   -> pas_inf pas_lux pas_cmp) ///
+>     (FinStress  -> cfpb_hard cfpb_sit cfpb_wry), ///
+>     method(ml) vce(robust) ///
+>     cov(WellBeing*MediaExp WellBeing*FinStress MediaExp*FinStress)
+
+Endogenous variables
+  Measurement: who1 who2 who3 who4 who5 pas_inf pas_lux pas_cmp cfpb_hard cfpb_sit cfpb_wry
+
+Exogenous variables
+  Latent: WellBeing MediaExp FinStress
+
+Fitting target model:
+Iteration 0:  Log pseudolikelihood = -5348.9328  
+Iteration 1:  Log pseudolikelihood = -5336.1784  
+Iteration 2:  Log pseudolikelihood = -5331.7523  
+Iteration 3:  Log pseudolikelihood = -5331.6998  
+Iteration 4:  Log pseudolikelihood = -5331.6998  
+
+Structural equation model                                  Number of obs = 411
+Estimation method: ml
+
+Log pseudolikelihood = -5331.6998
+
+ ( 1)  [who1]WellBeing = 1
+ ( 2)  [pas_inf]MediaExp = 1
+ ( 3)  [cfpb_hard]FinStress = 1
+-----------------------------------------------------------------------------------------
+                        |               Robust
+                        | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+------------------------+----------------------------------------------------------------
+Measurement             |
+  who1                  |
+              WellBeing |          1  (constrained)
+                  _cons |    2.80292   .0646834    43.33   0.000     2.676143    2.929697
+  ----------------------+----------------------------------------------------------------
+  who2                  |
+              WellBeing |   .9839954   .0305428    32.22   0.000     .9241325    1.043858
+                  _cons |   2.737226   .0634133    43.16   0.000     2.612938    2.861514
+  ----------------------+----------------------------------------------------------------
+  who3                  |
+              WellBeing |   .9790324   .0290429    33.71   0.000     .9221094    1.035956
+                  _cons |   2.574209   .0629845    40.87   0.000     2.450762    2.697657
+  ----------------------+----------------------------------------------------------------
+  who4                  |
+              WellBeing |   .9955477   .0368959    26.98   0.000     .9232331    1.067862
+                  _cons |   2.605839   .0635314    41.02   0.000      2.48132    2.730359
+  ----------------------+----------------------------------------------------------------
+  who5                  |
+              WellBeing |   1.012616   .0324495    31.21   0.000     .9490163    1.076216
+                  _cons |   2.683698   .0634723    42.28   0.000     2.559295    2.808102
+  ----------------------+----------------------------------------------------------------
+  pas_inf               |
+               MediaExp |          1  (constrained)
+                  _cons |   2.939173   .0572073    51.38   0.000     2.827048    3.051297
+  ----------------------+----------------------------------------------------------------
+  pas_lux               |
+               MediaExp |   1.074382    .040277    26.67   0.000     .9954403    1.153323
+                  _cons |   2.995134   .0604608    49.54   0.000     2.876633    3.113635
+  ----------------------+----------------------------------------------------------------
+  pas_cmp               |
+               MediaExp |   1.009358   .0404499    24.95   0.000     .9300781    1.088639
+                  _cons |   2.890511   .0598731    48.28   0.000     2.773162     3.00786
+  ----------------------+----------------------------------------------------------------
+  cfpb_hard             |
+              FinStress |          1  (constrained)
+                  _cons |   1.394161   .0735731    18.95   0.000      1.24996    1.538361
+  ----------------------+----------------------------------------------------------------
+  cfpb_sit              |
+              FinStress |   .8032884   .0192461    41.74   0.000     .7655668      .84101
+                  _cons |    1.10219   .0608384    18.12   0.000     .9829487    1.221431
+  ----------------------+----------------------------------------------------------------
+  cfpb_wry              |
+              FinStress |    .917972   .0252389    36.37   0.000     .8685048    .9674393
+                  _cons |   1.615572   .0707405    22.84   0.000     1.476923    1.754221
+------------------------+----------------------------------------------------------------
+             var(e.who1)|   .3459167   .0564157                      .2512747    .4762055
+             var(e.who2)|   .3226969   .0512804                      .2363354    .4406166
+             var(e.who3)|   .3138157   .0416375                      .2419558    .4070177
+             var(e.who4)|   .2975237   .0528526                      .2100452    .4214348
+             var(e.who5)|   .2475042   .0508584                      .1654526    .3702472
+          var(e.pas_inf)|   .2861239    .041498                      .2153278    .3801964
+          var(e.pas_lux)|   .2801985   .0459332                      .2032017    .3863707
+          var(e.pas_cmp)|    .394238   .0461911                       .313348    .4960094
+        var(e.cfpb_hard)|   .2050396   .0502668                      .1268119    .3315243
+         var(e.cfpb_sit)|   .2177698   .0311878                      .1644724    .2883383
+         var(e.cfpb_wry)|    .354338   .0422689                      .2804646    .4476695
+          var(WellBeing)|   1.369501   .0920525                       1.20046    1.562344
+           var(MediaExp)|   1.055675   .0737152                      .9206462    1.210507
+          var(FinStress)|   2.014294   .1120517                      1.806225    2.246331
+------------------------+----------------------------------------------------------------
+ cov(WellBeing,MediaExp)|  -.5781376   .0621345    -9.30   0.000    -.6999189   -.4563562
+cov(WellBeing,FinStress)|   -.685689   .0830841    -8.25   0.000    -.8485309   -.5228471
+ cov(MediaExp,FinStress)|   .1567385   .0841369     1.86   0.062    -.0081667    .3216437
+-----------------------------------------------------------------------------------------
+
+. estat gof, stats(all)
+
+----------------------------------------------------------------------------
+Fit statistic        |      Value   Description
+---------------------+------------------------------------------------------
+Size of residuals    |
+                SRMR |      0.044   Standardized root mean squared residual
+                  CD |      1.000   Coefficient of determination
+----------------------------------------------------------------------------
+Note: model was fit with vce(robust); only stats(residuals) valid.
+
+. sem, standardized
+
+Structural equation model                                  Number of obs = 411
+Estimation method: ml
+
+Log pseudolikelihood = -5331.6998
+
+ ( 1)  [who1]WellBeing = 1
+ ( 2)  [pas_inf]MediaExp = 1
+ ( 3)  [cfpb_hard]FinStress = 1
+-----------------------------------------------------------------------------------------
+                        |               Robust
+           Standardized | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+------------------------+----------------------------------------------------------------
+Measurement             |
+  who1                  |
+              WellBeing |   .8935034   .0179331    49.82   0.000     .8583551    .9286517
+                  _cons |   2.140059   .0783275    27.32   0.000      1.98654    2.293578
+  ----------------------+----------------------------------------------------------------
+  who2                  |
+              WellBeing |   .8968128   .0170102    52.72   0.000     .8634735    .9301522
+                  _cons |    2.13176   .0776923    27.44   0.000     1.979486    2.284034
+  ----------------------+----------------------------------------------------------------
+  who3                  |
+              WellBeing |   .8983648   .0138635    64.80   0.000      .871193    .9255367
+                  _cons |   2.018452   .0701372    28.78   0.000     1.880985    2.155918
+  ----------------------+----------------------------------------------------------------
+  who4                  |
+              WellBeing |   .9056554   .0174313    51.96   0.000     .8714908    .9398201
+                  _cons |   2.025664   .0729017    27.79   0.000      1.88278    2.168549
+  ----------------------+----------------------------------------------------------------
+  who5                  |
+              WellBeing |   .9220406   .0163219    56.49   0.000     .8900504    .9540309
+                  _cons |   2.088132    .072286    28.89   0.000     1.946454    2.229809
+  ----------------------+----------------------------------------------------------------
+  pas_inf               |
+               MediaExp |   .8869955   .0179224    49.49   0.000     .8518682    .9221227
+                  _cons |   2.537356   .0730972    34.71   0.000     2.394088    2.680624
+  ----------------------+----------------------------------------------------------------
+  pas_lux               |
+               MediaExp |   .9016909   .0170854    52.78   0.000      .868204    .9351777
+                  _cons |   2.446528   .0572415    42.74   0.000     2.334337     2.55872
+  ----------------------+----------------------------------------------------------------
+  pas_cmp               |
+               MediaExp |   .8554343   .0191264    44.73   0.000     .8179472    .8929214
+                  _cons |   2.384245     .05132    46.46   0.000     2.283659     2.48483
+  ----------------------+----------------------------------------------------------------
+  cfpb_hard             |
+              FinStress |   .9526868    .012164    78.32   0.000     .9288458    .9765277
+                  _cons |   .9358399   .0395802    23.64   0.000     .8582641    1.013416
+  ----------------------+----------------------------------------------------------------
+  cfpb_sit              |
+              FinStress |   .9254717    .010904    84.87   0.000     .9041003    .9468431
+                  _cons |   .8947189    .039363    22.73   0.000     .8175689    .9718689
+  ----------------------+----------------------------------------------------------------
+  cfpb_wry              |
+              FinStress |   .9095591    .012064    75.39   0.000      .885914    .9332042
+                  _cons |   1.127889   .0476212    23.68   0.000     1.034553    1.221225
+------------------------+----------------------------------------------------------------
+             var(e.who1)|   .2016517   .0320466                      .1476822    .2753439
+             var(e.who2)|   .1957267   .0305099                      .1441999    .2656657
+             var(e.who3)|   .1929406   .0249089                      .1498072    .2484934
+             var(e.who4)|   .1797882   .0315735                      .1274318    .2536558
+             var(e.who5)|   .1498411   .0300988                      .1010762     .222133
+          var(e.pas_inf)|   .2132391   .0317942                      .1592031    .2856156
+          var(e.pas_lux)|   .1869536   .0308116                      .1353469    .2582374
+          var(e.pas_cmp)|   .2682322   .0327228                      .2111879    .3406847
+        var(e.cfpb_hard)|   .0923879   .0231769                      .0565039    .1510609
+         var(e.cfpb_sit)|   .1435021   .0201826                      .1089287    .1890489
+         var(e.cfpb_wry)|   .1727022   .0219459                      .1346271    .2215457
+          var(WellBeing)|          1          .                             .           .
+           var(MediaExp)|          1          .                             .           .
+          var(FinStress)|          1          .                             .           .
+------------------------+----------------------------------------------------------------
+ cov(WellBeing,MediaExp)|  -.4808228   .0414198   -11.61   0.000    -.5620041   -.3996414
+cov(WellBeing,FinStress)|  -.4128428   .0443992    -9.30   0.000    -.4998636    -.325822
+ cov(MediaExp,FinStress)|   .1074853   .0558195     1.93   0.054     -.001919    .2168896
+-----------------------------------------------------------------------------------------
+
+. 
+. * Descriptive Statistics
+. summarize WHO5 PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS OSSS3, detail
+
+               WHO-5 Well-Being Index (0-100)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%           20              0
+10%           20              0       Obs                 411
+25%           36              0       Sum of wgt.         411
+
+50%           52                      Mean           53.61557
+                        Largest       Std. dev.      23.81961
+75%           76            100
+90%           80            100       Variance       567.3738
+95%           84            100       Skewness       .0135347
+99%          100            100       Kurtosis        2.01224
+
+      Passive Social Media Exposure (mean 3 items, 1-5)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            1              1
+ 5%     1.666667              1
+10%            2              1       Obs                 411
+25%            2              1       Sum of wgt.         411
+
+50%     2.666667                      Mean           2.941606
+                        Largest       Std. dev.      1.106936
+75%            4              5
+90%     4.666667              5       Variance       1.225308
+95%            5              5       Skewness       .4286641
+99%            5              5       Kurtosis       1.925907
+
+      CFPB worry subscale: psychological scarcity (0-4)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs                 411
+25%            0              0       Sum of wgt.         411
+
+50%            1                      Mean           1.370641
+                        Largest       Std. dev.      1.322194
+75%     2.666667       3.666667
+90%     3.333333       3.666667       Variance       1.748198
+95%     3.666667       3.666667       Skewness         .45841
+99%     3.666667              4       Kurtosis       1.731391
+
+                CFPB liquidity subscale (0-1)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .1666667              0
+ 5%     .3333333       .1666667
+10%     .3333333       .1666667       Obs                 411
+25%     .4166667       .1666667       Sum of wgt.         411
+
+50%     .5833333                      Mean           .5523114
+                        Largest       Std. dev.      .1521105
+75%     .6666667       .9166667
+90%     .6666667       .9166667       Variance       .0231376
+95%     .8333333       .9166667       Skewness      -.2016573
+99%     .9166667       .9166667       Kurtosis       3.010232
+
+         MacArthur subjective social rank (1=bottom,
+                           10=top)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            1              1
+ 5%            3              1
+10%            4              1       Obs                 411
+25%            5              1       Sum of wgt.         411
+
+50%            6                      Mean           6.238443
+                        Largest       Std. dev.      1.988156
+75%            8             10
+90%            9             10       Variance       3.952762
+95%           10             10       Skewness      -.0760861
+99%           10             10       Kurtosis        2.62384
+
+     Household income bracket (1=<10k THB, 7=>150k THB)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            1              1
+ 5%            2              1
+10%            2              1       Obs                 411
+25%            3              1       Sum of wgt.         411
+
+50%            4                      Mean           4.004866
+                        Largest       Std. dev.      1.363273
+75%            5              7
+90%            6              7       Variance       1.858513
+95%            6              7       Skewness      -.0955379
+99%            7              7       Kurtosis       2.876587
+
+         Daily social media hours (1=<1hr, 5=>6hrs)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            1              1
+ 5%            1              1
+10%            2              1       Obs                 411
+25%            2              1       Sum of wgt.         411
+
+50%            2                      Mean           2.562044
+                        Largest       Std. dev.      .9565791
+75%            3              5
+90%            4              5       Variance       .9150436
+95%            5              5       Skewness       1.036283
+99%            5              5       Kurtosis       3.532773
+
+       Offline Social Support Scale (mean 3 normalised
+                         items, 0-1)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     .0833333              0
+ 5%     .1666667              0
+10%     .2777778       .0833333       Obs                 411
+25%     .2777778       .0833333       Sum of wgt.         411
+
+50%     .3611111                      Mean           .3978778
+                        Largest       Std. dev.       .188118
+75%     .4722222              1
+90%     .6666667              1       Variance       .0353884
+95%          .75              1       Skewness        .985943
+99%     .9166667              1       Kurtosis       3.480487
+
+. 
+. di _newline "--- At-risk prevalence (WHO5 <= 50) ---"
+
+--- At-risk prevalence (WHO5 <= 50) ---
+
+. tab atrisk
+
+ WHO5 <= 50 |
+  = at-risk |
+ well-being |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        208       50.61       50.61
+          1 |        203       49.39      100.00
+------------+-----------------------------------
+      Total |        411      100.00
+
+. 
+. * Correlation Analysis: Spearman ranking matrix
+. di _newline "--- Spearman correlations ---"
+
+--- Spearman correlations ---
+
+. spearman WHO5 PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS, stats(rho p) pw
+(obs=411)
+
++-----------------+
+|  Key            |
+|-----------------|
+|   rho           |
+|   Sig. level    |
++-----------------+
+
+             |     WHO5   PasExp   PsySca CFPB_l~d  SubStat    HHInc  SOC_HRS
+-------------+---------------------------------------------------------------
+        WHO5 |   1.0000 
+             | 
+             |
+      PasExp |  -0.4468   1.0000 
+             |   0.0000 
+             |
+      PsySca |  -0.3894   0.1621   1.0000 
+             |   0.0000   0.0010 
+             |
+ CFPB_liquid |   0.2435  -0.0724  -0.5775   1.0000 
+             |   0.0000   0.1428   0.0000 
+             |
+     SubStat |   0.3919  -0.1244  -0.7120   0.5242   1.0000 
+             |   0.0000   0.0116   0.0000   0.0000 
+             |
+       HHInc |   0.1908  -0.0330  -0.4317   0.2612   0.6583   1.0000 
+             |   0.0001   0.5043   0.0000   0.0000   0.0000 
+             |
+     SOC_HRS |  -0.0834   0.3473   0.2000   0.0859  -0.1381  -0.1936   1.0000 
+             |   0.0913   0.0000   0.0000   0.0821   0.0050   0.0001 
+             |
+
+. 
+. di _newline "--- Sample demographics ---"
+
+--- Sample demographics ---
+
+. tab gender_raw
+
+                             gender_raw |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                                    ชาย |        170       41.36       41.36
+                                   หญิง |        235       57.18       98.54
+                         ไม่ต้องการระบุ |          6        1.46      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        411      100.00
+
+. tab age_raw
+
+                           age_raw |      Freq.     Percent        Cum.
+-----------------------------------+-----------------------------------
+                        18 — 24 ปี |        117       28.47       28.47
+                        25 — 34 ปี |        165       40.15       68.61
+                        35 — 44 ปี |        129       31.39      100.00
+-----------------------------------+-----------------------------------
+                             Total |        411      100.00
+
+. tab living_raw
+
+                             living_raw |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                                  คอนโด |         15        3.65        3.65
+                               บ้านเช่า |         18        4.38        8.03
+                          พักในที่ทำงาน |         12        2.92       10.95
+                                  หอพัก |         16        3.89       14.84
+                           อพาร์ทเม้นท์ |         17        4.14       18.98
+            อยู่กับครอบครัว / ผู้ปกครอง |        155       37.71       56.69
+    อยู่กับเพื่อน / คู่รัก / แชร์ที่พัก |         77       18.73       75.43
+                            อยู่คนเดียว |        101       24.57      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        411      100.00
+
+. tab sector_raw
+
+                             sector_raw |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                                   Cafe |          1        0.24        0.24
+                  การขนส่งและคลังสินค้า |         35        8.52        8.76
+        การค้าส่ง ค้าปลีก และการซ่อมแซม |         62       15.09       23.84
+          การบริหารราชการและรัฐวิสาหกิจ |         22        5.35       29.20
+                               การศึกษา |         62       15.09       44.28
+         การสื่อสารและเทคโนโลยีสารสนเทศ |         54       13.14       57.42
+           การเกษตรกรรม ป่าไม้ และประมง |          5        1.22       58.64
+                    การเงินและประกันภัย |         33        8.03       66.67
+                          ขายของออนไลน์ |          2        0.49       67.15
+            ที่พักแรมและบริการด้านอาหาร |         37        9.00       76.16
+    บริษัทผลิตยาปัจจุบันและเครื่องสำอาง |          1        0.24       76.40
+                                  บัญชี |          1        0.24       76.64
+                                ประชาชน |          1        0.24       76.89
+                          พนักงานบริษัท |          1        0.24       77.13
+                                 รพ.สต. |          2        0.49       77.62
+                          รับจ้างทั่วไป |          3        0.73       78.35
+                          ลูกจ้างของรัฐ |          2        0.49       78.83
+                                ว่างงาน |          3        0.73       79.56
+                              สาธารณสุข |          1        0.24       79.81
+               สุขภาพและกิจกรรมทางสังคม |         48       11.68       91.48
+             อุตสาหกรรมการผลิตและโรงงาน |         30        7.30       98.78
+                                  ไฟฟ้า |          1        0.24       99.03
+                        ไรเดอร์ส่งอาหาร |          4        0.97      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        411      100.00
+
+. 
+. * Dummy Variables
+. gen byte d_female = (gender_raw == "หญิง") if !missing(gender_raw)
+
+. gen byte d_gnd_nd = (gender_raw == "ไม่ต้องการระบุ") if !missing(gender_raw)
+
+. label variable d_female "Female (ref: male)"
+
+. label variable d_gnd_nd "Gender not disclosed (ref: male)"
+
+. tab gender_raw
+
+                             gender_raw |      Freq.     Percent        Cum.
+----------------------------------------+-----------------------------------
+                                    ชาย |        170       41.36       41.36
+                                   หญิง |        235       57.18       98.54
+                         ไม่ต้องการระบุ |          6        1.46      100.00
+----------------------------------------+-----------------------------------
+                                  Total |        411      100.00
+
+. 
+. gen byte d_age25_34 = (age_raw == "25 — 34 ปี") if !missing(age_raw)
+
+. gen byte d_age35_44 = (age_raw == "35 — 44 ปี") if !missing(age_raw)
+
+. label variable d_age25_34 "Age 25-34 (ref: 18-24)"
+
+. label variable d_age35_44 "Age 35-44 (ref: 18-24)"
+
+. tab d_age25_34 d_age35_44
+
+ Age 25-34 |    Age 35-44 (ref:
+     (ref: |        18-24)
+    18-24) |         0          1 |     Total
+-----------+----------------------+----------
+         0 |       117        129 |       246 
+         1 |       165          0 |       165 
+-----------+----------------------+----------
+     Total |       282        129 |       411 
+
+. 
+. gen byte d_live_alone  = (living_raw == "อยู่คนเดียว") if !missing(living_raw)
+
+. gen byte d_live_shared = (living_raw == "อยู่กับเพื่อน / คู่รัก / แชร์ที่พัก") if !missing(living_raw)
+
+. gen byte d_live_other  = inlist(living_raw, "บ้านเช่า","หอพัก","อพาร์ทเม้นท์", ///
+>                                              "พักในที่ทำงาน","คอนโด") if !missing(living_raw)
+
+. label variable d_live_alone   "Live alone (ref: with family)"
+
+. label variable d_live_shared  "Live with partner/friends (ref: with family)"
+
+. label variable d_live_other   "Rented/independent dwelling (ref: with family)"
+
+. tab d_live_alone
+
+ Live alone |
+ (ref: with |
+    family) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        310       75.43       75.43
+          1 |        101       24.57      100.00
+------------+-----------------------------------
+      Total |        411      100.00
+
+. tab d_live_shared
+
+  Live with |
+partner/fri |
+ ends (ref: |
+       with |
+    family) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        334       81.27       81.27
+          1 |         77       18.73      100.00
+------------+-----------------------------------
+      Total |        411      100.00
+
+. tab d_live_other
+
+Rented/inde |
+    pendent |
+   dwelling |
+ (ref: with |
+    family) |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |        333       81.02       81.02
+          1 |         78       18.98      100.00
+------------+-----------------------------------
+      Total |        411      100.00
+
+. 
+. * Reclassifying sector_raw from others inputted fields
+. replace sector_raw = "การค้าส่ง ค้าปลีก และการซ่อมแซม" ///
+>     if inlist(sector_raw, "E-commerce ","E-commerce","ขายของออนไลน์")
+(2 real changes made)
+
+. replace sector_raw = "อุตสาหกรรมการผลิตและโรงงาน" ///
+>     if sector_raw == "บริษัทผลิตยาปัจจุบันและเครื่องสำอาง"
+(1 real change made)
+
+. replace sector_raw = "การบริหารราชการและรัฐวิสาหกิจ" ///
+>     if inlist(sector_raw, "รับราชการ","ลูกจ้างของรัฐ")
+(2 real changes made)
+
+. replace sector_raw = "สุขภาพและกิจกรรมทางสังคม" ///
+>     if sector_raw == "รพ.สต."
+(2 real changes made)
+
+. 
+. * Reclassifying sector_raw from from choices
+. gen byte WrkIndy_IT   = (sector_raw == "การสื่อสารและเทคโนโลยีสารสนเทศ") if !missing(sector_raw)
+
+. gen byte WrkIndy_Edu  = (sector_raw == "การศึกษา") if !missing(sector_raw)
+
+. gen byte WrkIndy_Mfg  = (sector_raw == "อุตสาหกรรมการผลิตและโรงงาน") if !missing(sector_raw)
+
+. gen byte WrkIndy_Ret  = (sector_raw == "การค้าส่ง ค้าปลีก และการซ่อมแซม") if !missing(sector_raw)
+
+. gen byte WrkIndy_Hosp = (sector_raw == "ที่พักแรมและบริการด้านอาหาร") if !missing(sector_raw)
+
+. gen byte WrkIndy_Log  = (sector_raw == "การขนส่งและคลังสินค้า") if !missing(sector_raw)
+
+. gen byte WrkIndy_Hlth = (sector_raw == "สุขภาพและกิจกรรมทางสังคม") if !missing(sector_raw)
+
+. gen byte WrkIndy_Pub  = (sector_raw == "การบริหารราชการและรัฐวิสาหกิจ") if !missing(sector_raw)
+
+. label variable WrkIndy_IT   "IT/ICT (ref: Finance & Insurance)"
+
+. label variable WrkIndy_Edu  "Education (ref: Finance & Insurance)"
+
+. label variable WrkIndy_Mfg  "Manufacturing (ref: Finance & Insurance)"
+
+. label variable WrkIndy_Ret  "Retail/Trade (ref: Finance & Insurance)"
+
+. label variable WrkIndy_Hosp "Hospitality/F&B (ref: Finance & Insurance)"
+
+. label variable WrkIndy_Log  "Transport/Logistics (ref: Finance & Insurance)"
+
+. label variable WrkIndy_Hlth "Health/Social (ref: Finance & Insurance)"
+
+. label variable WrkIndy_Pub  "Public Administration (ref: Finance & Insurance)"
+
+. 
+. * Collapse WrkIndy to Contextual Working Groups
+. gen byte WrkIndy_grp = .
+(411 missing values generated)
+
+. 
+. replace WrkIndy_grp = 1 if inlist(sector_raw, ///
+>     "การเงินและประกันภัย", ///
+>     "การสื่อสารและเทคโนโลยีสารสนเทศ", ///
+>     "พนักงานบริษัท")
+(88 real changes made)
+
+. 
+. replace WrkIndy_grp = 2 if inlist(sector_raw, ///
+>     "การบริหารราชการและรัฐวิสาหกิจ", ///
+>     "การศึกษา", ///
+>     "สุขภาพและกิจกรรมทางสังคม")
+(136 real changes made)
+
+. 
+. replace WrkIndy_grp = 3 if inlist(sector_raw, ///
+>     "การค้าส่ง ค้าปลีก และการซ่อมแซม", ///
+>     "ที่พักแรมและบริการด้านอาหาร", ///
+>     "การขนส่งและคลังสินค้า")
+(136 real changes made)
+
+. 
+. replace WrkIndy_grp = 4 if inlist(sector_raw, ///
+>     "อุตสาหกรรมการผลิตและโรงงาน", ///
+>     "การเกษตรกรรม ป่าไม้ และประมง", ///
+>     "รับจ้างทั่วไป")
+(39 real changes made)
+
+. 
+. replace WrkIndy_grp = 5 if sector_raw == "นักเรียน/นักศึกษา"
+(0 real changes made)
+
+. 
+. * Set unclassified to Group 6
+. replace WrkIndy_grp = 6 if missing(WrkIndy_grp) & !missing(sector_raw)
+(12 real changes made)
+
+. 
+. label define lgrp 1 "Corporate/Prof" 2 "Public/Essential" 3 "Commerce/Hosp" ///
+>                   4 "Labor/Ag/Informal" 5 "Students" 6 "Unclassified"
+
+. label values WrkIndy_grp lgrp
+
+. 
+. tab WrkIndy_grp
+
+      WrkIndy_grp |      Freq.     Percent        Cum.
+------------------+-----------------------------------
+   Corporate/Prof |         88       21.41       21.41
+ Public/Essential |        136       33.09       54.50
+    Commerce/Hosp |        136       33.09       87.59
+Labor/Ag/Informal |         39        9.49       97.08
+     Unclassified |         12        2.92      100.00
+------------------+-----------------------------------
+            Total |        411      100.00
+
+. count if missing(WrkIndy_grp) & !missing(sector_raw)
+  0
+
+. 
+. * ======================================================
+. * Visualization variables for descriptive statistical  
+. set scheme s1color
+
+. 
+. histogram WHO5, ///
+>     width(8) freq ///
+>     kdensity kdenopts(lcolor(cranberry) lwidth(medthick)) ///
+>     color(edkblue%50) lcolor(edkblue) ///
+>     xline(50, lcolor(red) lpattern(dash) lwidth(medium)) ///
+>     title("Distribution of WHO-5 Well-Being (0–100)", size(medium)) ///
+>     xtitle("WHO-5 Score") ytitle("Frequency") ///
+>     name(g_who5, replace)
+(bin=13, start=0, width=8)
+
+. graph export "summary_WHO5.png", name(g_who5) replace width(1200)
+file summary_WHO5.png saved as PNG format
+
+. 
+. histogram PasExp, ///
+>     discrete freq ///
+>     color(dkorange%60) lcolor(dkorange) ///
+>     xline(2.936, lcolor(navy) lpattern(dash) lwidth(medium)) ///
+>     title("Passive Social Media Exposure (PasExp)", size(medium)) ///
+>     xtitle("PasExp Score (1=Never, 5=Very often)") ytitle("Frequency") ///
+>     xlabel(1 2 3 4 5) ///
+>     name(g_pasex, replace)
+(start=1, width=.33333302)
+
+. graph export "summary_PasEx.png", name(g_pasex) replace width(1200)
+file summary_PasEx.png saved as PNG format
+
+. 
+. qui sum PsySca, detail
+
+. local psy_med = r(p50)
+
+. histogram PsySca, ///
+>     width(0.33) freq ///
+>     kdensity kdenopts(lcolor(purple) lwidth(medthick)) ///
+>     color(purple%40) lcolor(purple) ///
+>     xline(`psy_med', lcolor(maroon) lpattern(dash) lwidth(medium)) ///
+>     title("Psychological Scarcity (PsySca)", size(medium)) ///
+>     xtitle("PsySca Score (0=None, 4=Constant)") ytitle("Frequency") ///
+>     name(g_psy, replace)
+(bin=13, start=0, width=.33)
+
+. graph export "summary_PsySca.png", name(g_psy) replace width(1200)
+file summary_PsySca.png saved as PNG format
+
+. 
+. histogram SubStat, ///
+>     discrete freq ///
+>     color(teal%60) lcolor(teal) ///
+>     xline(6.124, lcolor(red) lpattern(dash) lwidth(medium)) ///
+>     title("Subjective Social Status (SubStat)", size(medium)) ///
+>     xtitle("MacArthur Ladder (1=Bottom, 10=Top)") ytitle("Frequency") ///
+>     xlabel(1(1)10) ///
+>     name(g_sub, replace)
+(start=1, width=1)
+
+. graph export "summary_SubStat.png", name(g_sub) replace width(1200)
+file summary_SubStat.png saved as PNG format
+
+. 
+. histogram CFPB_liquid, ///
+>     width(0.083) freq ///
+>     kdensity kdenopts(lcolor(dkgreen) lwidth(medthick)) ///
+>     color(dkgreen%40) lcolor(dkgreen) ///
+>     title("Liquidity Constraint Subscale (CFPB_liquid)", size(medium)) ///
+>     xtitle("CFPB_liquid Score (0=No constraint, 1=Full constraint)") ytitle("Frequency") ///
+>     name(g_liq, replace)
+(bin=12, start=0, width=.083)
+
+. graph export "summary_CFPB_liquid.png", name(g_liq) replace width(1200)
+file summary_CFPB_liquid.png saved as PNG format
+
+. 
+. histogram HHInc, ///
+>     discrete freq ///
+>     color(sienna%60) lcolor(sienna) ///
+>     xline(3.809, lcolor(navy) lpattern(dash) lwidth(medium)) ///
+>     title("Household Income Bracket (HHInc)", size(medium)) ///
+>     xtitle("Income Bracket (1=<10k THB, 7=>150k THB)") ytitle("Frequency") ///
+>     xlabel(1 "1" 2 "2" 3 "3" 4 "4" 5 "5" 6 "6" 7 "7") ///
+>     name(g_inc, replace)
+(start=1, width=1)
+
+. graph export "summary_HHInc.png", name(g_inc) replace width(1200)
+file summary_HHInc.png saved as PNG format
+
+. 
+. histogram SOC_HRS, ///
+>     discrete freq ///
+>     color(gold%70) lcolor(gold) ///
+>     title("Daily Social Media Hours (SOC_HRS)", size(medium)) ///
+>     xtitle("Hours Bracket (1=<1hr, 5=>6hrs)") ytitle("Frequency") ///
+>     xlabel(1 "<1hr" 2 "1-2hr" 3 "2-4hr" 4 "4-6hr" 5 ">6hr") ///
+>     name(g_soc, replace)
+(start=1, width=1)
+
+. graph export "summary_SOC_HRS.png", name(g_soc) replace width(1200)
+file summary_SOC_HRS.png saved as PNG format
+
+. 
+. histogram OSSS3, ///
+>     width(0.05) freq ///
+>     kdensity kdenopts(lcolor(midblue) lwidth(medthick)) ///
+>     color(midblue%40) lcolor(midblue) ///
+>     title("Offline Social Support Scale (OSSS3)", size(medium)) ///
+>     xtitle("OSSS3 Score (0=No support, 1=Full support)") ytitle("Frequency") ///
+>     name(g_oss, replace)
+(bin=20, start=0, width=.05)
+
+. graph export "summary_OSSS3.png", name(g_oss) replace width(1200)
+file summary_OSSS3.png saved as PNG format
+
+. 
+. graph combine g_who5 g_pasex g_psy g_sub, ///
+>     cols(2) ///
+>     title("Core Study Variables — Distribution Summary", size(medsmall)) ///
+>     xsize(14) ysize(10)
+
+. graph export "summary_core4_combined.png", replace width(1600)
+file summary_core4_combined.png saved as PNG format
+
+. * ======================================================
+. 
+. * OLS no robust 
+. quietly regress WHO5 ///
+>     PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other
+
+. 
+. * Test Heteroskedasticity: Breusch-Pagan / Cook-Weisberg test
+. estat hettest
+
+Breusch–Pagan/Cook–Weisberg test for heteroskedasticity 
+Assumption: Normal error terms
+Variable: Fitted values of WHO5
+
+H0: Constant variance
+
+    chi2(1) =   4.66
+Prob > chi2 = 0.0308
+
+. 
+. * Test Heteroskedasticity+Non-linearity: White's general test
+. estat imtest, white
+
+White's test
+H0: Homoskedasticity
+Ha: Unrestricted heteroskedasticity
+
+   chi2(84) = 178.93
+Prob > chi2 = 0.0000
+
+Cameron & Trivedi's decomposition of IM-test
+
+--------------------------------------------------
+              Source |       chi2     df         p
+---------------------+----------------------------
+  Heteroskedasticity |     178.93     84    0.0000
+            Skewness |      31.06     13    0.0033
+            Kurtosis |       1.64      1    0.1997
+---------------------+----------------------------
+               Total |     211.63     98    0.0000
+--------------------------------------------------
+
+. 
+. * ======================================================
+. * Plot Residual VS Fitted Plot
+. predict resid_ols, residuals
+
+. predict yhat_ols,  xb
+
+. scatter resid_ols yhat_ols, ///
+>     yline(0, lcolor(red) lpattern(dash)) ///
+>     title("Residuals vs Fitted — M1 (plain OLS)") ///
+>     xtitle("Fitted values") ytitle("Residuals") ///
+>     mcolor(navy%40) msymbol(smcircle) ///
+>     name(g_hettest, replace)
+
+. graph export "diag_residvsfitted_OLS.png", replace width(1200)
+file diag_residvsfitted_OLS.png saved as PNG format
+
+. * ======================================================
+. 
+. * M1 (Base Model) + Robust applied
+. regress WHO5 ///
+>     PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other, ///
+>     vce(robust)
+
+Linear regression                               Number of obs     =        411
+                                                F(13, 397)        =      29.48
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.3692
+                                                Root MSE          =     19.225
+
+-------------------------------------------------------------------------------
+              |               Robust
+         WHO5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+       PasExp |  -9.622453   .8873575   -10.84   0.000    -11.36696   -7.877946
+       PsySca |  -3.677609   1.091766    -3.37   0.001    -5.823975   -1.531243
+  CFPB_liquid |  -9.272908   8.945314    -1.04   0.301    -26.85902    8.313199
+      SubStat |   3.267703   .9251906     3.53   0.000     1.448818    5.086588
+        HHInc |  -.2127525   1.040292    -0.20   0.838    -2.257922    1.832417
+      SOC_HRS |   2.240216   1.309489     1.71   0.088    -.3341834    4.814614
+     d_female |   -1.26045   1.932484    -0.65   0.515    -5.059632    2.538732
+     d_gnd_nd |   10.58192    5.31779     1.99   0.047     .1273701    21.03647
+   d_age25_34 |   3.270438   2.371898     1.38   0.169    -1.392613    7.933489
+   d_age35_44 |   .1712509   2.638397     0.06   0.948    -5.015725    5.358227
+ d_live_alone |   .7290949   2.789257     0.26   0.794    -4.754466    6.212656
+d_live_shared |  -2.974133   2.853961    -1.04   0.298    -8.584899    2.636634
+ d_live_other |  -1.030566   3.016187    -0.34   0.733    -6.960261    4.899129
+        _cons |   66.58351   9.882917     6.74   0.000     47.15412    86.01291
+-------------------------------------------------------------------------------
+
+. estimates store M1_robust_confirmed
+
+. 
+. * Test Normality: Shapiro-Wilk in M1 (Base Model)
+. swilk resid_ols
+
+                   Shapiro–Wilk W test for normal data
+
+    Variable |        Obs       W           V         z       Prob>z
+-------------+------------------------------------------------------
+   resid_ols |        411    0.99397      1.701     1.265    0.10288
+
+. 
+. * Test Normality: Skewness-Kurtosis Test 
+. sktest resid_ols
+
+Skewness and kurtosis tests for normality
+                                                         ----- Joint test -----
+    Variable |       Obs   Pr(skewness)   Pr(kurtosis)   Adj chi2(2)  Prob>chi2
+-------------+-----------------------------------------------------------------
+   resid_ols |       411         0.7851         0.4303          0.70     0.7043
+
+. 
+. * ======================================================
+. * Plot Q-Q, P-P Plots
+. qnorm resid_ols, ///
+>     title("Normal Q-Q Plot — M1 Residuals") ///
+>     name(g_qq, replace)
+
+. graph export "diag_qqplot_M1.png", replace width(1200)
+file diag_qqplot_M1.png saved as PNG format
+
+. 
+. pnorm resid_ols, ///
+>     title("Normal P-P Plot — M1 Residuals") ///
+>     name(g_pp, replace)
+
+. graph export "diag_ppplot_M1.png", replace width(1200)
+file diag_ppplot_M1.png saved as PNG format
+
+. * ======================================================
+. 
+. * Re-run OLS for Post-Estimation Leverage/Influencial
+. quietly regress WHO5 ///
+>     PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other
+
+. 
+. * Leverag-residual Squared Plot
+. lvr2plot, ///
+>     title("Leverage vs Normalized Residual² — M1") ///
+>     name(g_lvr2, replace)
+
+. graph export "diag_lvr2plot_M1.png", replace width(1200)
+file diag_lvr2plot_M1.png saved as PNG format
+
+. 
+. * Cook's Distance
+. predict cookd, cooksd
+
+. * Set Conventional threshold = 4/N
+. scalar thresh_cook = 4 / e(N)
+
+. di "  Cook's D threshold (4/N = 4/" e(N) "): " %6.4f thresh_cook
+  Cook's D threshold (4/N = 4/411): 0.0097
+
+. 
+. count if cookd > thresh_cook & !missing(cookd)
+  22
+
+. di "  Observations exceeding threshold: " r(N)
+  Observations exceeding threshold: 22
+
+. 
+. * List Influential Observations (Cook's Distance > 4/N)
+. gen influential = (cookd > thresh_cook) if !missing(cookd)
+
+. label variable influential "Cook's D > 4/N"
+
+. 
+. list WHO5 PasExp SubStat PsySca HHInc cookd if influential == 1, ///
+>     sepby(influential) noobs
+
+  +---------------------------------------------------------+
+  | WHO5     PasExp   SubStat     PsySca   HHInc      cookd |
+  |---------------------------------------------------------|
+  |   20   2.333333         6   1.666667       1   .0123989 |
+  |   32          1         2          2       4    .010514 |
+  |   80          4         5          2       3   .0114282 |
+  |  100   2.333333         6   1.333333       2   .0136937 |
+  |   20          4        10          0       5   .0122369 |
+  |   20          4        10          0       5   .0122369 |
+  |    0   4.333333         7          0       4   .0118127 |
+  |  100   2.333333         6   1.333333       2   .0136937 |
+  |  100          3         5   1.666667       4   .0237422 |
+  |   24          3         8   1.333333       2   .0147818 |
+  |   20          4        10          0       5   .0122369 |
+  |    0   4.333333         7          0       4   .0118127 |
+  |    0   4.333333         7          0       4   .0164051 |
+  |    0          2         4   3.333333       4   .0133075 |
+  |   80   2.666667         5   1.333333       3   .0107783 |
+  |    0          5        10   .3333333       7   .0255969 |
+  |  100   4.333333        10   .6666667       5   .0133973 |
+  |  100   4.666667        10   .3333333       6   .0179111 |
+  |   24          2         8   1.666667       4   .0108677 |
+  |   68   4.333333         4          0       6   .0102769 |
+  |   96          3         9          1       7   .0097409 |
+  |  100   2.666667        10   1.666667       5   .0174323 |
+  +---------------------------------------------------------+
+
+. 
+. * Identify Outliers in Y 
+. predict stdres, rstandard
+
+. count if abs(stdres) > 2.5 & !missing(stdres)
+  5
+
+. di "  Observations with |stdres| > 2.5: " r(N)
+  Observations with |stdres| > 2.5: 5
+
+. 
+. count if abs(stdres) > 3 & !missing(stdres)
+  0
+
+. di "  Observations with |stdres| > 3 (severe): " r(N)
+  Observations with |stdres| > 3 (severe): 0
+
+. 
+. * Sensitivity Check: Re-run M1 (Base Model)+Robusted excluding influential obs. 
+. regress WHO5 ///
+>     PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other ///
+>     if influential == 0, vce(robust)
+
+Linear regression                               Number of obs     =        389
+                                                F(13, 375)        =      34.72
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.4402
+                                                Root MSE          =      17.07
+
+-------------------------------------------------------------------------------
+              |               Robust
+         WHO5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+       PasExp |  -9.068276   .8023455   -11.30   0.000    -10.64594   -7.490616
+       PsySca |  -3.463275    .978263    -3.54   0.000    -5.386844   -1.539707
+  CFPB_liquid |   -5.47518   7.940922    -0.69   0.491     -21.0895    10.13914
+      SubStat |   3.675938   .7852165     4.68   0.000     2.131958    5.219917
+        HHInc |   -.797491   .9244234    -0.86   0.389    -2.615194    1.020212
+      SOC_HRS |   1.254905   1.150107     1.09   0.276    -1.006562    3.516371
+     d_female |  -2.143124   1.785212    -1.20   0.231    -5.653404    1.367156
+     d_gnd_nd |   6.517413   4.787148     1.36   0.174    -2.895605    15.93043
+   d_age25_34 |   3.367167   2.156786     1.56   0.119     -.873744    7.608077
+   d_age35_44 |  -.8890813   2.448387    -0.36   0.717     -5.70337    3.925207
+ d_live_alone |   1.960032   2.564378     0.76   0.445     -3.08233    7.002394
+d_live_shared |  -3.835509   2.681409    -1.43   0.153     -9.10799    1.436971
+ d_live_other |   .7526888   2.632162     0.29   0.775    -4.422959    5.928336
+        _cons |   65.63566   8.524348     7.70   0.000     48.87414    82.39717
+-------------------------------------------------------------------------------
+
+. estimates store M1_no_influential
+
+. 
+. * Compare M1 VS M1 with no influential coefficients
+. estimates table M1_robust_confirmed M1_no_influential, ///
+>     b(%8.3f) se(%8.3f) stats(N r2) ///
+>     title("M1: Full sample vs Influential Observations Excluded")
+
+M1: Full sample vs Influential Observations Excluded
+
+------------------------------------
+    Variable | M1_rob~d   M1_no_~l  
+-------------+----------------------
+      PasExp |   -9.622     -9.068  
+             |    0.887      0.802  
+      PsySca |   -3.678     -3.463  
+             |    1.092      0.978  
+ CFPB_liquid |   -9.273     -5.475  
+             |    8.945      7.941  
+     SubStat |    3.268      3.676  
+             |    0.925      0.785  
+       HHInc |   -0.213     -0.797  
+             |    1.040      0.924  
+     SOC_HRS |    2.240      1.255  
+             |    1.309      1.150  
+    d_female |   -1.260     -2.143  
+             |    1.932      1.785  
+    d_gnd_nd |   10.582      6.517  
+             |    5.318      4.787  
+  d_age25_34 |    3.270      3.367  
+             |    2.372      2.157  
+  d_age35_44 |    0.171     -0.889  
+             |    2.638      2.448  
+d_live_alone |    0.729      1.960  
+             |    2.789      2.564  
+d_live_sha~d |   -2.974     -3.836  
+             |    2.854      2.681  
+d_live_other |   -1.031      0.753  
+             |    3.016      2.632  
+       _cons |   66.584     65.636  
+             |    9.883      8.524  
+-------------+----------------------
+           N |      411        389  
+          r2 |    0.369      0.440  
+------------------------------------
+                        Legend: b/se
+
+.         
+. * ======================================================
+. * Testing M1 without CFPB_liquid 
+. quietly regress WHO5 ///
+>     PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other
+
+. estimates store M1_ols_full
+
+. 
+. quietly regress WHO5 ///
+>     PasExp PsySca SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other
+
+. estimates store M1_ols_drop
+
+. 
+. lrtest M1_ols_full M1_ols_drop
+
+Likelihood-ratio test
+Assumption: M1_ols_drop nested within M1_ols_full
+
+ LR chi2(1) =   1.24
+Prob > chi2 = 0.2662
+
+. 
+. * AIC/BIC Comparison
+. estimates stats M1_ols_full M1_ols_drop
+
+Akaike's information criterion and Bayesian information criterion
+
+-----------------------------------------------------------------------------
+       Model |          N   ll(null)  ll(model)      df        AIC        BIC
+-------------+---------------------------------------------------------------
+ M1_ols_full |        411  -1885.762  -1791.074      14   3610.147   3666.408
+ M1_ols_drop |        411  -1885.762  -1791.692      13   3609.383   3661.625
+-----------------------------------------------------------------------------
+Note: BIC uses N = number of observations. See [R] IC note.
+
+. 
+. * Robust M1 without CFPB_liquid
+. regress WHO5 ///
+>     PasExp PsySca SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other, ///
+>     vce(robust)
+
+Linear regression                               Number of obs     =        411
+                                                F(12, 398)        =      32.05
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.3673
+                                                Root MSE          =      19.23
+
+-------------------------------------------------------------------------------
+              |               Robust
+         WHO5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+       PasExp |   -9.58413   .8889198   -10.78   0.000     -11.3317   -7.836565
+       PsySca |  -3.146126   .9819392    -3.20   0.001    -5.076562   -1.215691
+      SubStat |    3.11837   .9082441     3.43   0.001     1.332814    4.903925
+        HHInc |   -.136399   1.054539    -0.13   0.897    -2.209562    1.936764
+      SOC_HRS |   2.108502   1.311166     1.61   0.109    -.4691742    4.686178
+     d_female |  -1.184121   1.932037    -0.61   0.540    -4.982395    2.614153
+     d_gnd_nd |    8.49429   4.866564     1.75   0.082    -1.073094    18.06167
+   d_age25_34 |   3.374373   2.379614     1.42   0.157    -1.303811    8.052556
+   d_age35_44 |   .5820686   2.594193     0.22   0.823    -4.517966    5.682103
+ d_live_alone |   .4489758      2.788     0.16   0.872    -5.032072    5.930024
+d_live_shared |   -3.09275   2.858157    -1.08   0.280    -8.711721    2.526221
+ d_live_other |  -.8734094   3.019546    -0.29   0.773    -6.809662    5.062843
+        _cons |   61.46145   8.557775     7.18   0.000     44.63736    78.28554
+-------------------------------------------------------------------------------
+
+. estimates store M1_no_liquid
+
+. 
+. * Testing core coefficients without CFPB_liquid
+. estimates table M1_robust_confirmed M1_no_liquid, ///
+>     keep(PasExp PsySca SubStat) b(%8.3f) se(%8.3f) ///
+>     title("Core coefficients: M1 with vs without CFPB_liquid")  
+
+Core coefficients: M1 with vs without CFPB_liquid
+
+------------------------------------
+    Variable | M1_rob~d   M1_no_~d  
+-------------+----------------------
+      PasExp |   -9.622     -9.584  
+             |    0.887      0.889  
+      PsySca |   -3.678     -3.146  
+             |    1.092      0.982  
+     SubStat |    3.268      3.118  
+             |    0.925      0.908  
+------------------------------------
+                        Legend: b/se
+
+. 
+. * M1 (Base Model) with CFPB_liquid
+. regress WHO5 ///
+>     PasExp PsySca CFPB_liquid ///
+>     SubStat ///
+>     HHInc SOC_HRS ///
+>     d_female d_gnd_nd ///
+>     d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other, ///
+>     vce(robust)
+
+Linear regression                               Number of obs     =        411
+                                                F(13, 397)        =      29.48
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.3692
+                                                Root MSE          =     19.225
+
+-------------------------------------------------------------------------------
+              |               Robust
+         WHO5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+       PasExp |  -9.622453   .8873575   -10.84   0.000    -11.36696   -7.877946
+       PsySca |  -3.677609   1.091766    -3.37   0.001    -5.823975   -1.531243
+  CFPB_liquid |  -9.272908   8.945314    -1.04   0.301    -26.85902    8.313199
+      SubStat |   3.267703   .9251906     3.53   0.000     1.448818    5.086588
+        HHInc |  -.2127525   1.040292    -0.20   0.838    -2.257922    1.832417
+      SOC_HRS |   2.240216   1.309489     1.71   0.088    -.3341834    4.814614
+     d_female |   -1.26045   1.932484    -0.65   0.515    -5.059632    2.538732
+     d_gnd_nd |   10.58192    5.31779     1.99   0.047     .1273701    21.03647
+   d_age25_34 |   3.270438   2.371898     1.38   0.169    -1.392613    7.933489
+   d_age35_44 |   .1712509   2.638397     0.06   0.948    -5.015725    5.358227
+ d_live_alone |   .7290949   2.789257     0.26   0.794    -4.754466    6.212656
+d_live_shared |  -2.974133   2.853961    -1.04   0.298    -8.584899    2.636634
+ d_live_other |  -1.030566   3.016187    -0.34   0.733    -6.960261    4.899129
+        _cons |   66.58351   9.882917     6.74   0.000     47.15412    86.01291
+-------------------------------------------------------------------------------
+
+. 
+. estimates store M1
+
+. di "M1: R2=" e(r2) " | Adj-R2=" e(r2_a) " | N=" e(N) " | df_res=" e(df_r)
+M1: R2=.36920399 | Adj-R2=.3485482 | N=411 | df_res=397
+
+. 
+. test PasExp PsySca SubStat
+
+ ( 1)  PasExp = 0
+ ( 2)  PsySca = 0
+ ( 3)  SubStat = 0
+
+       F(  3,   397) =   69.20
+            Prob > F =    0.0000
+
+. 
+. * Hypothesis testing on M1 (Base Model)
+. lincom PsySca
+
+ ( 1)  PsySca = 0
+
+------------------------------------------------------------------------------
+        WHO5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |  -3.677609   1.091766    -3.37   0.001    -5.823975   -1.531243
+------------------------------------------------------------------------------
+
+. lincom SubStat
+
+ ( 1)  SubStat = 0
+
+------------------------------------------------------------------------------
+        WHO5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |   3.267703   .9251906     3.53   0.000     1.448818    5.086588
+------------------------------------------------------------------------------
+
+. lincom PasExp
+
+ ( 1)  PasExp = 0
+
+------------------------------------------------------------------------------
+        WHO5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |  -9.622453   .8873575   -10.84   0.000    -11.36696   -7.877946
+------------------------------------------------------------------------------
+
+. 
+. * M1r (Base Model with Working Industry)
+. regress WHO5 ///
+>     PasExp PsySca CFPB_liquid ///
+>     SubStat ///
+>     HHInc SOC_HRS ///
+>     d_female d_gnd_nd ///
+>     d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other ///
+>     ib1.WrkIndy_grp, vce(robust)
+
+Linear regression                               Number of obs     =        411
+                                                F(17, 393)        =      23.60
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.3739
+                                                Root MSE          =     19.252
+
+------------------------------------------------------------------------------------
+                   |               Robust
+              WHO5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+            PasExp |  -9.475573   .8996702   -10.53   0.000    -11.24434   -7.706805
+            PsySca |  -3.419744   1.096965    -3.12   0.002    -5.576398    -1.26309
+       CFPB_liquid |  -8.918854   9.011468    -0.99   0.323    -26.63557     8.79786
+           SubStat |   3.344766   .9374598     3.57   0.000     1.501703    5.187829
+             HHInc |  -.2229832    1.08706    -0.21   0.838    -2.360164    1.914197
+           SOC_HRS |   1.976724   1.314892     1.50   0.134    -.6083791    4.561826
+          d_female |  -1.375268   1.956422    -0.70   0.483     -5.22163    2.471094
+          d_gnd_nd |   9.621618   5.442518     1.77   0.078    -1.078474    20.32171
+        d_age25_34 |   2.873513   2.412801     1.19   0.234    -1.870098    7.617125
+        d_age35_44 |  -.1440904   2.672431    -0.05   0.957     -5.39814    5.109959
+      d_live_alone |   .1263356   2.813923     0.04   0.964     -5.40589    5.658562
+     d_live_shared |  -3.042795   2.889006    -1.05   0.293    -8.722634    2.637044
+      d_live_other |  -1.036771   3.007944    -0.34   0.731    -6.950445    4.876903
+                   |
+       WrkIndy_grp |
+ Public/Essential  |   .3590892   3.037929     0.12   0.906    -5.613536    6.331715
+    Commerce/Hosp  |  -1.170068   2.846464    -0.41   0.681    -6.766269    4.426133
+Labor/Ag/Informal  |  -4.609625   3.401413    -1.36   0.176    -11.29687    2.077615
+     Unclassified  |   4.719225   4.641989     1.02   0.310    -4.407012    13.84546
+                   |
+             _cons |   66.90589   10.35534     6.46   0.000      46.5471    87.26468
+------------------------------------------------------------------------------------
+
+. 
+. estimates store M1r
+
+. di "M1r: R2=" e(r2) " | Adj-R2=" e(r2_a) " | N=" e(N)
+M1r: R2=.37385295 | Adj-R2=.34676771 | N=411
+
+. 
+. test PasExp PsySca SubStat
+
+ ( 1)  PasExp = 0
+ ( 2)  PsySca = 0
+ ( 3)  SubStat = 0
+
+       F(  3,   393) =   62.90
+            Prob > F =    0.0000
+
+. 
+. * Multiconllinearity Testing: VIF on Base Model
+. qui regress WHO5 PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other
+
+. vif
+
+    Variable |       VIF       1/VIF  
+-------------+----------------------
+     SubStat |      3.00    0.333785
+      PsySca |      2.61    0.383827
+       HHInc |      1.88    0.531076
+ CFPB_liquid |      1.85    0.541812
+  d_age35_44 |      1.59    0.628103
+  d_age25_34 |      1.53    0.654721
+d_live_other |      1.43    0.699756
+d_live_alone |      1.38    0.726190
+d_live_sha~d |      1.33    0.753056
+     SOC_HRS |      1.29    0.775330
+    d_gnd_nd |      1.17    0.852335
+      PasExp |      1.11    0.899727
+    d_female |      1.05    0.953717
+-------------+----------------------
+    Mean VIF |      1.63
+
+. 
+. * Multiconllinearity Testing: VIF on Core Variables
+. qui regress WHO5 PasExp_c SubStat_c PasExpc_SubStatc PsySca
+
+. vif
+
+    Variable |       VIF       1/VIF  
+-------------+----------------------
+      PsySca |      2.06    0.484285
+   SubStat_c |      2.05    0.487329
+PasExpc_Su~c |      1.04    0.959150
+    PasExp_c |      1.04    0.962056
+-------------+----------------------
+    Mean VIF |      1.55
+
+. 
+. * Multiconllinearity Testing: Pairwise 
+. pwcorr PasExp PsySca CFPB_liquid SubStat HHInc OSSS3, sig star(0.05)
+
+             |   PasExp   PsySca CFPB_l~d  SubStat    HHInc    OSSS3
+-------------+------------------------------------------------------
+      PasExp |   1.0000 
+             |
+             |
+      PsySca |   0.0861   1.0000 
+             |   0.0812
+             |
+ CFPB_liquid |  -0.0534  -0.6009*  1.0000 
+             |   0.2798   0.0000
+             |
+     SubStat |  -0.0535  -0.7126*  0.4802*  1.0000 
+             |   0.2792   0.0000   0.0000
+             |
+       HHInc |   0.0277  -0.4281*  0.1987*  0.6322*  1.0000 
+             |   0.5760   0.0000   0.0000   0.0000
+             |
+       OSSS3 |   0.1762*  0.2487* -0.0366  -0.1610* -0.1864*  1.0000 
+             |   0.0003   0.0000   0.4593   0.0011   0.0001
+             |
+
+. 
+. * M3 (Uncenter Mean) with Interaction Term included and Control Lists dropped
+. regress WHO5 c.PasExp##c.SubStat PsySca, vce(robust)
+
+Linear regression                               Number of obs     =        411
+                                                F(4, 406)         =     116.99
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.4049
+                                                Root MSE          =     18.465
+
+------------------------------------------------------------------------------------
+                   |               Robust
+              WHO5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+            PasExp |   8.627488   3.286474     2.63   0.009     2.166859    15.08812
+           SubStat |   10.21161   1.364014     7.49   0.000     7.530193    12.89302
+                   |
+c.PasExp#c.SubStat |  -2.678339   .5015185    -5.34   0.000    -3.664236   -1.692442
+                   |
+            PsySca |  -4.097367   .9921629    -4.13   0.000    -6.047785   -2.146949
+             _cons |   18.98411    9.45514     2.01   0.045     .3969649    37.57125
+------------------------------------------------------------------------------------
+
+. estimates store M3
+
+. 
+. di "M3: R2=" e(r2) " | Adj-R2=" e(r2_a) " | N=" e(N)
+M3: R2=.40493918 | Adj-R2=.39907651 | N=411
+
+. 
+. * Partial Differentials
+. scalar b_PAS   = _b[PasExp]
+
+. scalar b_LAD   = _b[SubStat]
+
+. scalar b_INT   = _b[c.PasExp#c.SubStat]
+
+. scalar b_CW    = _b[PsySca]
+
+. scalar b_CONST = _b[_cons]
+
+. 
+. di _newline "COEFFICIENTS:"
+
+COEFFICIENTS:
+
+. di "  a (constant):      " %7.3f b_CONST
+  a (constant):       18.984
+
+. di "  b1 (PasExp direct):   " %7.3f b_PAS
+  b1 (PasExp direct):     8.627
+
+. di "  b2 (SubStat direct):" %7.3f b_LAD
+  b2 (SubStat direct): 10.212
+
+. di "  b3 (PsySca):   " %7.3f b_CW
+  b3 (PsySca):    -4.097
+
+. di "  b4 (PasExp x SubStat): " %7.4f b_INT
+  b4 (PasExp x SubStat): -2.6783
+
+. 
+. di _newline "SUBSTITUTED EQUATION:"
+
+SUBSTITUTED EQUATION:
+
+. di "  WHO5 = " %5.2f b_CONST " + (" %6.3f b_PAS ")·PasExp + (" %6.3f b_LAD ")·SubStat"
+  WHO5 = 18.98 + ( 8.627)·PasExp + (10.212)·SubStat
+
+. di "               + (" %6.4f b_INT ")·(PasExp x SubStat) + (" %6.3f b_CW ")·PsySca"
+               + (-2.6783)·(PasExp x SubStat) + (-4.097)·PsySca
+
+. 
+. test PasExp SubStat c.PasExp#c.SubStat PsySca
+
+ ( 1)  PasExp = 0
+ ( 2)  SubStat = 0
+ ( 3)  c.PasExp#c.SubStat = 0
+ ( 4)  PsySca = 0
+
+       F(  4,   406) =  116.99
+            Prob > F =    0.0000
+
+. 
+. * M3c (Center Mean)
+. regress WHO5 c.PasExp_c##c.SubStat_c PsySca, vce(robust)
+
+Linear regression                               Number of obs     =        411
+                                                F(4, 406)         =     116.99
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.4049
+                                                Root MSE          =     18.465
+
+----------------------------------------------------------------------------------------
+                       |               Robust
+                  WHO5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-----------------------+----------------------------------------------------------------
+              PasExp_c |  -8.081177   .7897732   -10.23   0.000    -9.633733   -6.528622
+             SubStat_c |   2.332987   .7349539     3.17   0.002     .8881969    3.777777
+                       |
+c.PasExp_c#c.SubStat_c |  -2.678339   .5015185    -5.34   0.000    -3.664236   -1.692442
+                       |
+                PsySca |  -4.097367   .9921629    -4.13   0.000    -6.047785   -2.146949
+                 _cons |   58.91698   1.468423    40.12   0.000     56.03032    61.80364
+----------------------------------------------------------------------------------------
+
+. estimates store M3c
+
+. 
+. * Comparing Models
+. estimates stats M1 M1r M3
+
+Akaike's information criterion and Bayesian information criterion
+
+-----------------------------------------------------------------------------
+       Model |          N   ll(null)  ll(model)      df        AIC        BIC
+-------------+---------------------------------------------------------------
+          M1 |        411  -1885.762  -1791.074      14   3610.147   3666.408
+         M1r |        411  -1885.762  -1789.553      18   3615.107   3687.442
+          M3 |        411  -1885.762  -1779.089       5   3568.178   3588.271
+-----------------------------------------------------------------------------
+Note: BIC uses N = number of observations. See [R] IC note.
+
+. 
+. * Heteroskedasticity Testing: M3 Model without Robust
+. quietly regress WHO5 ///
+>     PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other
+
+. 
+. test CFPB_liquid HHInc SOC_HRS ///
+>      d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>      d_live_alone d_live_shared d_live_other
+
+ ( 1)  CFPB_liquid = 0
+ ( 2)  HHInc = 0
+ ( 3)  SOC_HRS = 0
+ ( 4)  d_female = 0
+ ( 5)  d_gnd_nd = 0
+ ( 6)  d_age25_34 = 0
+ ( 7)  d_age35_44 = 0
+ ( 8)  d_live_alone = 0
+ ( 9)  d_live_shared = 0
+ (10)  d_live_other = 0
+
+       F( 10,   397) =    1.26
+            Prob > F =    0.2505
+
+.          
+. * ======================================================
+. * Comparing M1 VS M3 on plain OLS        
+. di _newline "--- [F2] Re-state M3 for reference ---"
+
+--- [F2] Re-state M3 for reference ---
+
+. regress WHO5 c.PasExp##c.SubStat PsySca, vce(robust)
+
+Linear regression                               Number of obs     =        411
+                                                F(4, 406)         =     116.99
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.4049
+                                                Root MSE          =     18.465
+
+------------------------------------------------------------------------------------
+                   |               Robust
+              WHO5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+            PasExp |   8.627488   3.286474     2.63   0.009     2.166859    15.08812
+           SubStat |   10.21161   1.364014     7.49   0.000     7.530193    12.89302
+                   |
+c.PasExp#c.SubStat |  -2.678339   .5015185    -5.34   0.000    -3.664236   -1.692442
+                   |
+            PsySca |  -4.097367   .9921629    -4.13   0.000    -6.047785   -2.146949
+             _cons |   18.98411    9.45514     2.01   0.045     .3969649    37.57125
+------------------------------------------------------------------------------------
+
+. estimates store M3_confirmed
+
+. 
+. quietly regress WHO5 ///
+>     PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other
+
+. estimates store M1_ols_f
+
+. 
+. quietly regress WHO5 c.PasExp##c.SubStat PsySca
+
+. estimates store M3_ols_f
+
+. 
+. estimates stats M1_ols_f M3_ols_f
+
+Akaike's information criterion and Bayesian information criterion
+
+-----------------------------------------------------------------------------
+       Model |          N   ll(null)  ll(model)      df        AIC        BIC
+-------------+---------------------------------------------------------------
+    M1_ols_f |        411  -1885.762  -1791.074      14   3610.147   3666.408
+    M3_ols_f |        411  -1885.762  -1779.089       5   3568.178   3588.271
+-----------------------------------------------------------------------------
+Note: BIC uses N = number of observations. See [R] IC note.
+
+. 
+. * Adding Control Lists to M3 Model with Interaction Term included 
+. regress WHO5 c.PasExp##c.SubStat PsySca ///
+>     CFPB_liquid HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other, ///
+>     vce(robust)
+
+Linear regression                               Number of obs     =        411
+                                                F(14, 396)        =      36.27
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.4218
+                                                Root MSE          =     18.429
+
+------------------------------------------------------------------------------------
+                   |               Robust
+              WHO5 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+            PasExp |   7.667227   3.448525     2.22   0.027     .8875211    14.44693
+           SubStat |   10.55203   1.501316     7.03   0.000     7.600479    13.50357
+                   |
+c.PasExp#c.SubStat |  -2.628899   .5176557    -5.08   0.000    -3.646596   -1.611202
+                   |
+            PsySca |  -4.284667   1.096715    -3.91   0.000    -6.440779   -2.128556
+       CFPB_liquid |  -7.054641   8.596121    -0.82   0.412    -23.95438    9.845098
+             HHInc |   -.131023   1.006696    -0.13   0.897    -2.110159    1.848113
+           SOC_HRS |   2.496172   1.311166     1.90   0.058    -.0815432    5.073888
+          d_female |  -1.132943   1.850189    -0.61   0.541    -4.770363    2.504477
+          d_gnd_nd |   7.089493   5.712863     1.24   0.215     -4.14184    18.32083
+        d_age25_34 |   3.338584   2.305796     1.45   0.148    -1.194547    7.871716
+        d_age35_44 |   .1710158   2.622742     0.07   0.948    -4.985224    5.327255
+      d_live_alone |   1.270587   2.758659     0.46   0.645    -4.152861    6.694035
+     d_live_shared |  -1.443376   2.845697    -0.51   0.612    -7.037938    4.151186
+      d_live_other |   .3948202   2.782657     0.14   0.887    -5.075808    5.865448
+             _cons |   16.09971   13.48425     1.19   0.233    -10.40996    42.60938
+------------------------------------------------------------------------------------
+
+. estimates store M3_full_controls
+
+. 
+. esttab M3_confirmed M3_full_controls, ///
+>     keep(PasExp SubStat c.PasExp#c.SubStat PsySca) ///
+>     b(3) se(3) star(* 0.10 ** 0.05 *** 0.01) ///
+>     title("Interaction robustness: M3 parsimonious vs M3 with full controls") ///
+>     mtitles("M3_confirmed" "M3_full_controls")
+
+Interaction robustness: M3 parsimonious vs M3 with full controls
+--------------------------------------------
+                      (1)             (2)   
+             M3_confirmed    M3_full_co~s   
+--------------------------------------------
+PasExp              8.627***        7.667** 
+                  (3.286)         (3.449)   
+
+SubStat            10.212***       10.552***
+                  (1.364)         (1.501)   
+
+c.PasExp#c~t       -2.678***       -2.629***
+                  (0.502)         (0.518)   
+
+PsySca             -4.097***       -4.285***
+                  (0.992)         (1.097)   
+--------------------------------------------
+N                     411             411   
+--------------------------------------------
+Standard errors in parentheses
+* p<0.10, ** p<0.05, *** p<0.01
+
+. * ======================================================
+. 
+. * Hypothesis Re-Testing
+. qui regress WHO5 c.PasExp##c.SubStat PsySca, vce(robust)
+
+. 
+. lincom PsySca
+
+ ( 1)  PsySca = 0
+
+------------------------------------------------------------------------------
+        WHO5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |  -4.097367   .9921629    -4.13   0.000    -6.047785   -2.146949
+------------------------------------------------------------------------------
+
+. 
+. qui sum PasExp
+
+. local pas_bar = r(mean)
+
+. di "  Mean PasExp = `pas_bar'"
+  Mean PasExp = 2.941605850727889
+
+. di "  MEM(SubStat) = " b_LAD + b_INT*`pas_bar'
+  MEM(SubStat) = 2.332987
+
+. lincom SubStat + `pas_bar' * c.PasExp#c.SubStat
+
+ ( 1)  SubStat + 2.941606*c.PasExp#c.SubStat = 0
+
+------------------------------------------------------------------------------
+        WHO5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |   2.332987   .7349539     3.17   0.002     .8881968    3.777777
+------------------------------------------------------------------------------
+
+. 
+. qui sum SubStat
+
+. local lad_bar = r(mean)
+
+. di "  Mean SubStat = `lad_bar'"
+  Mean SubStat = 6.238442822384428
+
+. di "  MEM(PasExp) = " b_PAS + b_INT*`lad_bar'
+  MEM(PasExp) = -8.0811775
+
+. lincom PasExp + `lad_bar' * c.PasExp#c.SubStat
+
+ ( 1)  PasExp + 6.238443*c.PasExp#c.SubStat = 0
+
+------------------------------------------------------------------------------
+        WHO5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |  -8.081177   .7897732   -10.23   0.000    -9.633733   -6.528622
+------------------------------------------------------------------------------
+
+. 
+. test c.PasExp#c.SubStat
+
+ ( 1)  c.PasExp#c.SubStat = 0
+
+       F(  1,   406) =   28.52
+            Prob > F =    0.0000
+
+. lincom c.PasExp#c.SubStat
+
+ ( 1)  c.PasExp#c.SubStat = 0
+
+------------------------------------------------------------------------------
+        WHO5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |  -2.678339   .5015185    -5.34   0.000    -3.664236   -1.692442
+------------------------------------------------------------------------------
+
+. 
+. * ======================================================
+. * Computing Marginal Effects + Ploting
+. qui regress WHO5 c.PasExp##c.SubStat PsySca, vce(robust)
+
+. 
+. margins, dydx(*) atmeans
+
+Conditional marginal effects                               Number of obs = 411
+Model VCE: Robust
+
+Expression: Linear prediction, predict()
+dy/dx wrt:  PasExp SubStat PsySca
+At: PasExp  = 2.941606 (mean)
+    SubStat = 6.238443 (mean)
+    PsySca  = 1.370641 (mean)
+
+------------------------------------------------------------------------------
+             |            Delta-method
+             |      dy/dx   std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+      PasExp |  -8.081178   .7897732   -10.23   0.000    -9.633733   -6.528622
+     SubStat |   2.332987   .7349539     3.17   0.002      .888197    3.777777
+      PsySca |  -4.097367   .9921629    -4.13   0.000    -6.047785   -2.146949
+------------------------------------------------------------------------------
+
+. 
+. margins, dydx(PasExp) at(SubStat=(1 2 3 4 5 6 7 8 9 10))
+
+Average marginal effects                                   Number of obs = 411
+Model VCE: Robust
+
+Expression: Linear prediction, predict()
+dy/dx wrt:  PasExp
+1._at:  SubStat =  1
+2._at:  SubStat =  2
+3._at:  SubStat =  3
+4._at:  SubStat =  4
+5._at:  SubStat =  5
+6._at:  SubStat =  6
+7._at:  SubStat =  7
+8._at:  SubStat =  8
+9._at:  SubStat =  9
+10._at: SubStat = 10
+
+------------------------------------------------------------------------------
+             |            Delta-method
+             |      dy/dx   std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+PasExp       |
+         _at |
+          1  |   5.949149   2.802136     2.12   0.034     .4406421    11.45766
+          2  |    3.27081   2.325095     1.41   0.160    -1.299919    7.841539
+          3  |   .5924709    1.86097     0.32   0.750     -3.06587    4.250812
+          4  |  -2.085868   1.422461    -1.47   0.143    -4.882177    .7104399
+          5  |  -4.764208   1.042411    -4.57   0.000    -6.813405    -2.71501
+          6  |  -7.442547   .8080152    -9.21   0.000    -9.030963   -5.854131
+          7  |  -10.12089   .8498221   -11.91   0.000    -11.79149   -8.450285
+          8  |  -12.79923   1.137782   -11.25   0.000     -15.0359   -10.56255
+          9  |  -15.47756   1.539461   -10.05   0.000    -18.50387   -12.45125
+         10  |   -18.1559   1.987052    -9.14   0.000     -22.0621   -14.24971
+------------------------------------------------------------------------------
+
+. marginsplot, ///
+>     yline(0, lcolor(red) lpattern(dash)) ///
+>     title("Marginal Effect of PasExp on WHO5 by Social Rank (M3)") ///
+>     xtitle("MacArthur Ladder") ytitle("dWHO5/dPAS")
+
+Variables that uniquely identify margins: SubStat
+
+. graph export "ME_PAS_by_LADDER.png", replace width(1200)
+file ME_PAS_by_LADDER.png saved as PNG format
+
+. 
+. margins, dydx(SubStat) at(PasExp=(1 2 3 4 5))
+
+Average marginal effects                                   Number of obs = 411
+Model VCE: Robust
+
+Expression: Linear prediction, predict()
+dy/dx wrt:  SubStat
+1._at: PasExp = 1
+2._at: PasExp = 2
+3._at: PasExp = 3
+4._at: PasExp = 4
+5._at: PasExp = 5
+
+------------------------------------------------------------------------------
+             |            Delta-method
+             |      dy/dx   std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+SubStat      |
+         _at |
+          1  |   7.533266   .9608945     7.84   0.000     5.644316    9.422216
+          2  |   4.854927   .6993872     6.94   0.000     3.480055    6.229799
+          3  |   2.176588   .7469995     2.91   0.004     .7081179    3.645057
+          4  |  -.5017515   1.062975    -0.47   0.637    -2.591373     1.58787
+          5  |  -3.180091   1.484879    -2.14   0.033    -6.099101   -.2610802
+------------------------------------------------------------------------------
+
+. marginsplot, ///
+>     title("Marginal Effect of SubStat on WHO5 by PasExp Level (M3)") ///
+>     xtitle("PasExp Index") ytitle("dWHO5/dLADDER")
+
+Variables that uniquely identify margins: PasExp
+
+. graph export "ME_LADDER_by_PAS.png", replace width(1200)
+file ME_LADDER_by_PAS.png saved as PNG format
+
+. 
+. margins, at(PasExp=(1 2 3 4 5) SubStat=(1 2 3 4 5 6 7 8 9 10))
+
+Predictive margins                                         Number of obs = 411
+Model VCE: Robust
+
+Expression: Linear prediction, predict()
+1._at:  PasExp  =  1
+        SubStat =  1
+2._at:  PasExp  =  1
+        SubStat =  2
+3._at:  PasExp  =  1
+        SubStat =  3
+4._at:  PasExp  =  1
+        SubStat =  4
+5._at:  PasExp  =  1
+        SubStat =  5
+6._at:  PasExp  =  1
+        SubStat =  6
+7._at:  PasExp  =  1
+        SubStat =  7
+8._at:  PasExp  =  1
+        SubStat =  8
+9._at:  PasExp  =  1
+        SubStat =  9
+10._at: PasExp  =  1
+        SubStat = 10
+11._at: PasExp  =  2
+        SubStat =  1
+12._at: PasExp  =  2
+        SubStat =  2
+13._at: PasExp  =  2
+        SubStat =  3
+14._at: PasExp  =  2
+        SubStat =  4
+15._at: PasExp  =  2
+        SubStat =  5
+16._at: PasExp  =  2
+        SubStat =  6
+17._at: PasExp  =  2
+        SubStat =  7
+18._at: PasExp  =  2
+        SubStat =  8
+19._at: PasExp  =  2
+        SubStat =  9
+20._at: PasExp  =  2
+        SubStat = 10
+21._at: PasExp  =  3
+        SubStat =  1
+22._at: PasExp  =  3
+        SubStat =  2
+23._at: PasExp  =  3
+        SubStat =  3
+24._at: PasExp  =  3
+        SubStat =  4
+25._at: PasExp  =  3
+        SubStat =  5
+26._at: PasExp  =  3
+        SubStat =  6
+27._at: PasExp  =  3
+        SubStat =  7
+28._at: PasExp  =  3
+        SubStat =  8
+29._at: PasExp  =  3
+        SubStat =  9
+30._at: PasExp  =  3
+        SubStat = 10
+31._at: PasExp  =  4
+        SubStat =  1
+32._at: PasExp  =  4
+        SubStat =  2
+33._at: PasExp  =  4
+        SubStat =  3
+34._at: PasExp  =  4
+        SubStat =  4
+35._at: PasExp  =  4
+        SubStat =  5
+36._at: PasExp  =  4
+        SubStat =  6
+37._at: PasExp  =  4
+        SubStat =  7
+38._at: PasExp  =  4
+        SubStat =  8
+39._at: PasExp  =  4
+        SubStat =  9
+40._at: PasExp  =  4
+        SubStat = 10
+41._at: PasExp  =  5
+        SubStat =  1
+42._at: PasExp  =  5
+        SubStat =  2
+43._at: PasExp  =  5
+        SubStat =  3
+44._at: PasExp  =  5
+        SubStat =  4
+45._at: PasExp  =  5
+        SubStat =  5
+46._at: PasExp  =  5
+        SubStat =  6
+47._at: PasExp  =  5
+        SubStat =  7
+48._at: PasExp  =  5
+        SubStat =  8
+49._at: PasExp  =  5
+        SubStat =  9
+50._at: PasExp  =  5
+        SubStat = 10
+
+------------------------------------------------------------------------------
+             |            Delta-method
+             |     Margin   std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         _at |
+          1  |   29.52884   5.758841     5.13   0.000     18.20797    40.84971
+          2  |   37.06211   4.846895     7.65   0.000     27.53397    46.59025
+          3  |   44.59538   3.958178    11.27   0.000     36.81429    52.37646
+          4  |   52.12864    3.11265    16.75   0.000     46.00972    58.24756
+          5  |   59.66191   2.357253    25.31   0.000     55.02796    64.29585
+          6  |   67.19517   1.808683    37.15   0.000     63.63962    70.75073
+          7  |   74.72844    1.68305    44.40   0.000     71.41986    78.03702
+          8  |   82.26171   2.059277    39.95   0.000     78.21353    86.30988
+          9  |   89.79497    2.73774    32.80   0.000     84.41306    95.17689
+         10  |   97.32824   3.549148    27.42   0.000     90.35124    104.3052
+         11  |   35.47799   4.024274     8.82   0.000     27.56698    43.38901
+         12  |   40.33292   3.358717    12.01   0.000     33.73027    46.93557
+         13  |   45.18785   2.710251    16.67   0.000     39.85997    50.51572
+         14  |   50.04277    2.09481    23.89   0.000     45.92475     54.1608
+         15  |    54.8977   1.552186    35.37   0.000     51.84638    57.94902
+         16  |   59.75263   1.186852    50.35   0.000     57.41948    62.08577
+         17  |   64.60755   1.177387    54.87   0.000     62.29302    66.92209
+         18  |   69.46248   1.530408    45.39   0.000     66.45397    72.47099
+         19  |   74.31741   2.067931    35.94   0.000     70.25222     78.3826
+         20  |   79.17233   2.681197    29.53   0.000     73.90157     84.4431
+         21  |   41.42714   3.863838    10.72   0.000     33.83152    49.02277
+         22  |   43.60373   3.143517    13.87   0.000     37.42413    49.78333
+         23  |   45.78032   2.439297    18.77   0.000     40.98509    50.57555
+         24  |    47.9569   1.770496    27.09   0.000     44.47642    51.43739
+         25  |   50.13349   1.197982    41.85   0.000     47.77847    52.48851
+         26  |   52.31008   .9228655    56.68   0.000     50.49589    54.12427
+         27  |   54.48667   1.176528    46.31   0.000     52.17382    56.79952
+         28  |   56.66326   1.741486    32.54   0.000      53.2398    60.08671
+         29  |   58.83984   2.407767    24.44   0.000      54.1066    63.57309
+         30  |   61.01643   3.110937    19.61   0.000     54.90088    67.13199
+         31  |   47.37629   5.419192     8.74   0.000     36.72311    58.02947
+         32  |   46.87454   4.392557    10.67   0.000     38.23955    55.50953
+         33  |   46.37279   3.388406    13.69   0.000     39.71178     53.0338
+         34  |   45.87104   2.434722    18.84   0.000      41.0848    50.65727
+         35  |   45.36929   1.623047    27.95   0.000     42.17866    48.55991
+         36  |   44.86753   1.265117    35.47   0.000     42.38054    47.35453
+         37  |   44.36578   1.681247    26.39   0.000     41.06075    47.67082
+         38  |   43.86403   2.512468    17.46   0.000     38.92496     48.8031
+         39  |   43.36228   3.472496    12.49   0.000     36.53596     50.1886
+         40  |   42.86053   4.479263     9.57   0.000     34.05508    51.66597
+         41  |   53.32544   7.714271     6.91   0.000     38.16054    68.49034
+         42  |   50.14535   6.286457     7.98   0.000     37.78728    62.50342
+         43  |   46.96526   4.892734     9.60   0.000       37.347    56.58351
+         44  |   43.78517   3.573217    12.25   0.000     36.76085    50.80949
+         45  |   40.60508   2.450846    16.57   0.000     35.78715    45.42301
+         46  |   37.42499   1.911841    19.58   0.000     33.66664    41.18333
+         47  |    34.2449   2.390264    14.33   0.000     29.54606    38.94373
+         48  |   31.06481   3.490174     8.90   0.000     24.20374    37.92587
+         49  |   27.88471   4.801978     5.81   0.000     18.44487    37.32456
+         50  |   24.70462   6.192447     3.99   0.000     12.53136    36.87789
+------------------------------------------------------------------------------
+
+. marginsplot, ///
+>     x(SubStat) ///
+>     title("Predicted WHO5: PasExp x SubStat Surface (M3)") ///
+>     ytitle("Predicted WHO-5 (0-100)") xtitle("MacArthur Ladder")
+
+Variables that uniquely identify margins: PasExp SubStat
+
+. graph export "interaction_surface.png", replace width(1400)
+file interaction_surface.png saved as PNG format
+
+. 
+. margins, dydx(PasExp SubStat) over(d_age25_34 d_age35_44) atmeans
+
+Conditional marginal effects                               Number of obs = 411
+Model VCE: Robust
+
+Expression: Linear prediction, predict()
+dy/dx wrt:  PasExp SubStat
+Over:       d_age25_34 d_age35_44
+At: 0.d_age25_34#0.d_age35_44
+        PasExp  =  2.82906 (mean)
+        SubStat = 6.589744 (mean)
+        PsySca  = 1.219373 (mean)
+    0.d_age25_34#1.d_age35_44
+        PasExp  = 3.033592 (mean)
+        SubStat = 6.186047 (mean)
+        PsySca  = 1.565891 (mean)
+    1.d_age25_34#0.d_age35_44
+        PasExp  = 2.949495 (mean)
+        SubStat = 6.030303 (mean)
+        PsySca  = 1.325253 (mean)
+
+---------------------------------------------------------------------------------------
+                      |            Delta-method
+                      |      dy/dx   std. err.      t    P>|t|     [95% conf. interval]
+----------------------+----------------------------------------------------------------
+PasExp                |
+d_age25_34#d_age35_44 |
+                 0 0  |   -9.02208   .7955556   -11.34   0.000      -10.586   -7.458158
+                 0 1  |  -7.940843   .7922719   -10.02   0.000     -9.49831   -6.383375
+                 1 0  |  -7.523708   .8047347    -9.35   0.000    -9.105675   -5.941741
+----------------------+----------------------------------------------------------------
+SubStat               |
+d_age25_34#d_age35_44 |
+                 0 0  |   2.634423   .7145565     3.69   0.000     1.229731    4.039116
+                 0 1  |   2.086618    .754357     2.77   0.006     .6036844    3.569551
+                 1 0  |   2.311857   .7365248     3.14   0.002     .8639787    3.759735
+---------------------------------------------------------------------------------------
+
+. 
+. margins, dydx(PasExp SubStat) over(d_female) atmeans
+
+Conditional marginal effects                               Number of obs = 411
+Model VCE: Robust
+
+Expression: Linear prediction, predict()
+dy/dx wrt:  PasExp SubStat
+Over:       d_female
+At: 0.d_female
+        PasExp  = 2.996212 (mean)
+        SubStat = 6.170455 (mean)
+        PsySca  = 1.323864 (mean)
+    1.d_female
+        PasExp  = 2.900709 (mean)
+        SubStat = 6.289362 (mean)
+        PsySca  = 1.405674 (mean)
+
+------------------------------------------------------------------------------
+             |            Delta-method
+             |      dy/dx   std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+PasExp       |
+    d_female |
+          0  |  -7.899082    .793182    -9.96   0.000    -9.458338   -6.339825
+          1  |  -8.217555   .7881773   -10.43   0.000    -9.766973   -6.668137
+-------------+----------------------------------------------------------------
+SubStat      |
+    d_female |
+          0  |   2.186733   .7461892     2.93   0.004     .7198557    3.653609
+          1  |   2.442522   .7271014     3.36   0.001     1.013169    3.871876
+------------------------------------------------------------------------------
+
+. * ======================================================
+. 
+. * ======================================================
+. * Marginal Effects by Industry Groups 
+. 
+. * Predicting WHO5 by Industry Groups
+. margins, over(WrkIndy_grp) atmeans
+
+Adjusted predictions                                       Number of obs = 411
+Model VCE: Robust
+
+Expression: Linear prediction, predict()
+Over:       WrkIndy_grp
+At: 1.WrkIndy_grp
+        PasExp  = 3.174242 (mean)
+        SubStat = 6.636364 (mean)
+        PsySca  = 1.231061 (mean)
+    2.WrkIndy_grp
+        PasExp  = 2.860294 (mean)
+        SubStat = 6.014706 (mean)
+        PsySca  =    1.375 (mean)
+    3.WrkIndy_grp
+        PasExp  = 2.884804 (mean)
+        SubStat = 6.176471 (mean)
+        PsySca  = 1.441176 (mean)
+    4.WrkIndy_grp
+        PasExp  = 3.042735 (mean)
+        SubStat = 6.307692 (mean)
+        PsySca  = 1.598291 (mean)
+    6.WrkIndy_grp
+        PasExp  = 2.472222 (mean)
+        SubStat = 6.333333 (mean)
+        PsySca  = .8055556 (mean)
+
+------------------------------------------------------------------------------------
+                   |            Delta-method
+                   |     Margin   std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+       WrkIndy_grp |
+   Corporate/Prof  |   52.67331   1.030639    51.11   0.000     50.64725    54.69936
+ Public/Essential  |    53.3695   .9224798    57.85   0.000     51.55606    55.18293
+    Commerce/Hosp  |   53.31697   .9407867    56.67   0.000     51.46755    55.16639
+Labor/Ag/Informal  |   51.69376   1.029992    50.19   0.000     49.66898    53.71854
+     Unclassified  |   59.75017   .9430064    63.36   0.000     57.89639    61.60396
+------------------------------------------------------------------------------------
+
+. 
+. marginsplot, ///
+>     recast(bar) recastci(rcap) ///
+>     ciopt(lcolor(gs8) lwidth(medium)) ///
+>     ytitle("Predicted WHO-5 (0–100)") ///
+>     xtitle("") ///
+>     xlabel(1 `" "Corporate/" "Prof" "' ///
+>            2 `" "Public/" "Essential" "' ///
+>            3 `" "Commerce/" "Hosp" "' ///
+>            4 `" "Labor/Ag/" "Informal" "', noticks) ///
+>     yline(50, lcolor(red) lpattern(dash) lwidth(medium)) ///
+>     title("Predicted WHO-5 Well-Being by Industry Group (M3)", size(medium)) ///
+>     note("Red dashed line = clinical at-risk threshold (50)" ///
+>          "Bars = predicted margins at group means | 95% CI shown" ///
+>          "Restricted N = WrkIndy_grp 1–4 | vce(robust)") ///
+>     name(g_ind_pred, replace)
+
+Variables that uniquely identify margins: WrkIndy_grp
+
+. graph export "ME_industry_predicted_WHO5.png", name(g_ind_pred) replace width(1200)
+file ME_industry_predicted_WHO5.png saved as PNG format
+
+. 
+. * ME PasExp by Industry Group
+. margins, dydx(PasExp) over(WrkIndy_grp) atmeans
+
+Conditional marginal effects                               Number of obs = 411
+Model VCE: Robust
+
+Expression: Linear prediction, predict()
+dy/dx wrt:  PasExp
+Over:       WrkIndy_grp
+At: 1.WrkIndy_grp
+        PasExp  = 3.174242 (mean)
+        SubStat = 6.636364 (mean)
+        PsySca  = 1.231061 (mean)
+    2.WrkIndy_grp
+        PasExp  = 2.860294 (mean)
+        SubStat = 6.014706 (mean)
+        PsySca  =    1.375 (mean)
+    3.WrkIndy_grp
+        PasExp  = 2.884804 (mean)
+        SubStat = 6.176471 (mean)
+        PsySca  = 1.441176 (mean)
+    4.WrkIndy_grp
+        PasExp  = 3.042735 (mean)
+        SubStat = 6.307692 (mean)
+        PsySca  = 1.598291 (mean)
+    6.WrkIndy_grp
+        PasExp  = 2.472222 (mean)
+        SubStat = 6.333333 (mean)
+        PsySca  = .8055556 (mean)
+
+------------------------------------------------------------------------------------
+                   |            Delta-method
+                   |      dy/dx   std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+PasExp             |
+       WrkIndy_grp |
+   Corporate/Prof  |  -9.146944   .7992441   -11.44   0.000    -10.71812   -7.575771
+ Public/Essential  |  -7.481933   .8063891    -9.28   0.000    -9.067153   -5.896714
+    Commerce/Hosp  |  -7.915195   .7928218    -9.98   0.000    -9.473743   -6.356647
+Labor/Ag/Informal  |  -8.266652   .7878046   -10.49   0.000    -9.815337   -6.717966
+     Unclassified  |  -8.335327   .7874631   -10.59   0.000    -9.883341   -6.787313
+------------------------------------------------------------------------------------
+
+. 
+. marginsplot, ///
+>     recast(bar) recastci(rcap) ///
+>     ciopt(lcolor(gs8) lwidth(medium)) ///
+>     yline(0, lcolor(red) lpattern(dash) lwidth(medium)) ///
+>     ytitle("dWHO5/dPasEx (Marginal Effect)") ///
+>     xtitle("") ///
+>     xlabel(1 `" "Corporate/" "Prof" "' ///
+>            2 `" "Public/" "Essential" "' ///
+>            3 `" "Commerce/" "Hosp" "' ///
+>            4 `" "Labor/Ag/" "Informal" "', noticks) ///
+>     title("Marginal Effect of PasExp on WHO5 by Industry Group (M3)", size(medium)) ///
+>     note("Red dashed line = zero (null effect)" ///
+>          "At group means of PasExp, SubStat, PsySca | 95% CI shown") ///
+>     name(g_ind_pas, replace)
+
+Variables that uniquely identify margins: WrkIndy_grp
+
+. graph export "ME_industry_PasEx.png", name(g_ind_pas) replace width(1200)
+file ME_industry_PasEx.png saved as PNG format
+
+. 
+. * ME SubStat by Industry Group
+. margins, dydx(SubStat) over(WrkIndy_grp) atmeans
+
+Conditional marginal effects                               Number of obs = 411
+Model VCE: Robust
+
+Expression: Linear prediction, predict()
+dy/dx wrt:  SubStat
+Over:       WrkIndy_grp
+At: 1.WrkIndy_grp
+        PasExp  = 3.174242 (mean)
+        SubStat = 6.636364 (mean)
+        PsySca  = 1.231061 (mean)
+    2.WrkIndy_grp
+        PasExp  = 2.860294 (mean)
+        SubStat = 6.014706 (mean)
+        PsySca  =    1.375 (mean)
+    3.WrkIndy_grp
+        PasExp  = 2.884804 (mean)
+        SubStat = 6.176471 (mean)
+        PsySca  = 1.441176 (mean)
+    4.WrkIndy_grp
+        PasExp  = 3.042735 (mean)
+        SubStat = 6.307692 (mean)
+        PsySca  = 1.598291 (mean)
+    6.WrkIndy_grp
+        PasExp  = 2.472222 (mean)
+        SubStat = 6.333333 (mean)
+        PsySca  = .8055556 (mean)
+
+------------------------------------------------------------------------------------
+                   |            Delta-method
+                   |      dy/dx   std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+SubStat            |
+       WrkIndy_grp |
+   Corporate/Prof  |   1.709907   .7883334     2.17   0.031     .1601823    3.259632
+ Public/Essential  |   2.550767   .7198316     3.54   0.000     1.135705     3.96583
+    Commerce/Hosp  |   2.485122   .7241814     3.43   0.001     1.061508    3.908735
+Labor/Ag/Informal  |   2.062129   .7564122     2.73   0.007     .5751552    3.549102
+     Unclassified  |   3.590156   .6774779     5.30   0.000     2.258354    4.921958
+------------------------------------------------------------------------------------
+
+. 
+. marginsplot, ///
+>     recast(bar) recastci(rcap) ///
+>     ciopt(lcolor(gs8) lwidth(medium)) ///
+>     yline(0, lcolor(red) lpattern(dash) lwidth(medium)) ///
+>     ytitle("dWHO5/dSubStat (Marginal Effect)") ///
+>     xtitle("") ///
+>     xlabel(1 `" "Corporate/" "Prof" "' ///
+>            2 `" "Public/" "Essential" "' ///
+>            3 `" "Commerce/" "Hosp" "' ///
+>            4 `" "Labor/Ag/" "Informal" "', noticks) ///
+>     title("Marginal Effect of SubStat on WHO5 by Industry Group (M3)", size(medium)) ///
+>     note("Red dashed line = zero (null effect)" ///
+>          "At group means of PasExp, SubStat, PsySca | 95% CI shown") ///
+>     name(g_ind_sub, replace)
+
+Variables that uniquely identify margins: WrkIndy_grp
+
+. graph export "ME_industry_SubStat.png", name(g_ind_sub) replace width(1200)
+file ME_industry_SubStat.png saved as PNG format
+
+. 
+. * ME PsySca by Industry Group
+. margins, dydx(PsySca) over(WrkIndy_grp) atmeans
+
+Conditional marginal effects                               Number of obs = 411
+Model VCE: Robust
+
+Expression: Linear prediction, predict()
+dy/dx wrt:  PsySca
+Over:       WrkIndy_grp
+At: 1.WrkIndy_grp
+        PasExp  = 3.174242 (mean)
+        SubStat = 6.636364 (mean)
+        PsySca  = 1.231061 (mean)
+    2.WrkIndy_grp
+        PasExp  = 2.860294 (mean)
+        SubStat = 6.014706 (mean)
+        PsySca  =    1.375 (mean)
+    3.WrkIndy_grp
+        PasExp  = 2.884804 (mean)
+        SubStat = 6.176471 (mean)
+        PsySca  = 1.441176 (mean)
+    4.WrkIndy_grp
+        PasExp  = 3.042735 (mean)
+        SubStat = 6.307692 (mean)
+        PsySca  = 1.598291 (mean)
+    6.WrkIndy_grp
+        PasExp  = 2.472222 (mean)
+        SubStat = 6.333333 (mean)
+        PsySca  = .8055556 (mean)
+
+------------------------------------------------------------------------------------
+                   |            Delta-method
+                   |      dy/dx   std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+PsySca             |
+       WrkIndy_grp |
+   Corporate/Prof  |  -4.097367   .9921629    -4.13   0.000    -6.047785   -2.146949
+ Public/Essential  |  -4.097367   .9921629    -4.13   0.000    -6.047785   -2.146949
+    Commerce/Hosp  |  -4.097367   .9921629    -4.13   0.000    -6.047785   -2.146949
+Labor/Ag/Informal  |  -4.097367   .9921629    -4.13   0.000    -6.047785   -2.146949
+     Unclassified  |  -4.097367   .9921629    -4.13   0.000    -6.047785   -2.146949
+------------------------------------------------------------------------------------
+
+. 
+. marginsplot, ///
+>     recast(bar) recastci(rcap) ///
+>     ciopt(lcolor(gs8) lwidth(medium)) ///
+>     yline(0, lcolor(red) lpattern(dash) lwidth(medium)) ///
+>     ytitle("dWHO5/dPsySca (Marginal Effect)") ///
+>     xtitle("") ///
+>     xlabel(1 `" "Corporate/" "Prof" "' ///
+>            2 `" "Public/" "Essential" "' ///
+>            3 `" "Commerce/" "Hosp" "' ///
+>            4 `" "Labor/Ag/" "Informal" "', noticks) ///
+>     title("Marginal Effect of PsySca on WHO5 by Industry Group (M3)", size(medium)) ///
+>     note("Red dashed line = zero (null effect)" ///
+>          "At group means of PasExp, SubStat, PsySca | 95% CI shown") ///
+>     name(g_ind_psy, replace)
+
+Variables that uniquely identify margins: WrkIndy_grp
+
+. graph export "ME_industry_PsySca.png", name(g_ind_psy) replace width(1200)
+file ME_industry_PsySca.png saved as PNG format
+
+. 
+. * Interaction Surface by Industry Group
+. table WrkIndy_grp, stat(mean PasExp SubStat PsySca WHO5) nformat(%6.3f)
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+> -----------
+                    |  Passive Social Media Exposure (mean 3 items, 1-5)   MacArthur subjective social rank (1=bottom, 10=top)   CFPB worry subscale: psychological scarcity (0-4)   WHO-5 Well-Being In
+> dex (0-100)
+--------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+> -----------
+WrkIndy_grp         |                                                                                                                                                                                   
+>            
+  Corporate/Prof    |                                              3.174                                                 6.636                                               1.231                      
+>      53.545
+  Public/Essential  |                                              2.860                                                 6.015                                               1.375                      
+>      55.559
+  Commerce/Hosp     |                                              2.885                                                 6.176                                               1.441                      
+>      52.676
+  Labor/Ag/Informal |                                              3.043                                                 6.308                                               1.598                      
+>      46.872
+  Unclassified      |                                              2.472                                                 6.333                                               0.806                      
+>      64.667
+  Total             |                                              2.942                                                 6.238                                               1.371                      
+>      53.616
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+> -----------
+
+. 
+. * Interaction surface: ME of PasExp across full SubStat range, split by industry
+. margins, dydx(PasExp) at(SubStat=(1 2 3 4 5 6 7 8 9 10)) over(WrkIndy_grp) atmeans
+
+Conditional marginal effects                               Number of obs = 411
+Model VCE: Robust
+
+Expression: Linear prediction, predict()
+dy/dx wrt:  PasExp
+Over:       WrkIndy_grp
+1._at: 1.WrkIndy_grp
+            PasExp  = 3.174242 (mean)
+            SubStat =        1
+            PsySca  = 1.231061 (mean)
+       2.WrkIndy_grp
+            PasExp  = 2.860294 (mean)
+            SubStat =        1
+            PsySca  =    1.375 (mean)
+       3.WrkIndy_grp
+            PasExp  = 2.884804 (mean)
+            SubStat =        1
+            PsySca  = 1.441176 (mean)
+       4.WrkIndy_grp
+            PasExp  = 3.042735 (mean)
+            SubStat =        1
+            PsySca  = 1.598291 (mean)
+       6.WrkIndy_grp
+            PasExp  = 2.472222 (mean)
+            SubStat =        1
+            PsySca  = .8055556 (mean)
+2._at: 1.WrkIndy_grp
+            PasExp  = 3.174242 (mean)
+            SubStat =        2
+            PsySca  = 1.231061 (mean)
+       2.WrkIndy_grp
+            PasExp  = 2.860294 (mean)
+            SubStat =        2
+            PsySca  =    1.375 (mean)
+       3.WrkIndy_grp
+            PasExp  = 2.884804 (mean)
+            SubStat =        2
+            PsySca  = 1.441176 (mean)
+       4.WrkIndy_grp
+            PasExp  = 3.042735 (mean)
+            SubStat =        2
+            PsySca  = 1.598291 (mean)
+       6.WrkIndy_grp
+            PasExp  = 2.472222 (mean)
+            SubStat =        2
+            PsySca  = .8055556 (mean)
+3._at: 1.WrkIndy_grp
+            PasExp  = 3.174242 (mean)
+            SubStat =        3
+            PsySca  = 1.231061 (mean)
+       2.WrkIndy_grp
+            PasExp  = 2.860294 (mean)
+            SubStat =        3
+            PsySca  =    1.375 (mean)
+       3.WrkIndy_grp
+            PasExp  = 2.884804 (mean)
+            SubStat =        3
+            PsySca  = 1.441176 (mean)
+       4.WrkIndy_grp
+            PasExp  = 3.042735 (mean)
+            SubStat =        3
+            PsySca  = 1.598291 (mean)
+       6.WrkIndy_grp
+            PasExp  = 2.472222 (mean)
+            SubStat =        3
+            PsySca  = .8055556 (mean)
+4._at: 1.WrkIndy_grp
+            PasExp  = 3.174242 (mean)
+            SubStat =        4
+            PsySca  = 1.231061 (mean)
+       2.WrkIndy_grp
+            PasExp  = 2.860294 (mean)
+            SubStat =        4
+            PsySca  =    1.375 (mean)
+       3.WrkIndy_grp
+            PasExp  = 2.884804 (mean)
+            SubStat =        4
+            PsySca  = 1.441176 (mean)
+       4.WrkIndy_grp
+            PasExp  = 3.042735 (mean)
+            SubStat =        4
+            PsySca  = 1.598291 (mean)
+       6.WrkIndy_grp
+            PasExp  = 2.472222 (mean)
+            SubStat =        4
+            PsySca  = .8055556 (mean)
+5._at: 1.WrkIndy_grp
+            PasExp  = 3.174242 (mean)
+            SubStat =        5
+            PsySca  = 1.231061 (mean)
+       2.WrkIndy_grp
+            PasExp  = 2.860294 (mean)
+            SubStat =        5
+            PsySca  =    1.375 (mean)
+       3.WrkIndy_grp
+            PasExp  = 2.884804 (mean)
+            SubStat =        5
+            PsySca  = 1.441176 (mean)
+       4.WrkIndy_grp
+            PasExp  = 3.042735 (mean)
+            SubStat =        5
+            PsySca  = 1.598291 (mean)
+       6.WrkIndy_grp
+            PasExp  = 2.472222 (mean)
+            SubStat =        5
+            PsySca  = .8055556 (mean)
+6._at: 1.WrkIndy_grp
+            PasExp  = 3.174242 (mean)
+            SubStat =        6
+            PsySca  = 1.231061 (mean)
+       2.WrkIndy_grp
+            PasExp  = 2.860294 (mean)
+            SubStat =        6
+            PsySca  =    1.375 (mean)
+       3.WrkIndy_grp
+            PasExp  = 2.884804 (mean)
+            SubStat =        6
+            PsySca  = 1.441176 (mean)
+       4.WrkIndy_grp
+            PasExp  = 3.042735 (mean)
+            SubStat =        6
+            PsySca  = 1.598291 (mean)
+       6.WrkIndy_grp
+            PasExp  = 2.472222 (mean)
+            SubStat =        6
+            PsySca  = .8055556 (mean)
+7._at: 1.WrkIndy_grp
+            PasExp  = 3.174242 (mean)
+            SubStat =        7
+            PsySca  = 1.231061 (mean)
+       2.WrkIndy_grp
+            PasExp  = 2.860294 (mean)
+            SubStat =        7
+            PsySca  =    1.375 (mean)
+       3.WrkIndy_grp
+            PasExp  = 2.884804 (mean)
+            SubStat =        7
+            PsySca  = 1.441176 (mean)
+       4.WrkIndy_grp
+            PasExp  = 3.042735 (mean)
+            SubStat =        7
+            PsySca  = 1.598291 (mean)
+       6.WrkIndy_grp
+            PasExp  = 2.472222 (mean)
+            SubStat =        7
+            PsySca  = .8055556 (mean)
+8._at: 1.WrkIndy_grp
+            PasExp  = 3.174242 (mean)
+            SubStat =        8
+            PsySca  = 1.231061 (mean)
+       2.WrkIndy_grp
+            PasExp  = 2.860294 (mean)
+            SubStat =        8
+            PsySca  =    1.375 (mean)
+       3.WrkIndy_grp
+            PasExp  = 2.884804 (mean)
+            SubStat =        8
+            PsySca  = 1.441176 (mean)
+       4.WrkIndy_grp
+            PasExp  = 3.042735 (mean)
+            SubStat =        8
+            PsySca  = 1.598291 (mean)
+       6.WrkIndy_grp
+            PasExp  = 2.472222 (mean)
+            SubStat =        8
+            PsySca  = .8055556 (mean)
+9._at: 1.WrkIndy_grp
+            PasExp  = 3.174242 (mean)
+            SubStat =        9
+            PsySca  = 1.231061 (mean)
+       2.WrkIndy_grp
+            PasExp  = 2.860294 (mean)
+            SubStat =        9
+            PsySca  =    1.375 (mean)
+       3.WrkIndy_grp
+            PasExp  = 2.884804 (mean)
+            SubStat =        9
+            PsySca  = 1.441176 (mean)
+       4.WrkIndy_grp
+            PasExp  = 3.042735 (mean)
+            SubStat =        9
+            PsySca  = 1.598291 (mean)
+       6.WrkIndy_grp
+            PasExp  = 2.472222 (mean)
+            SubStat =        9
+            PsySca  = .8055556 (mean)
+10._at: 1.WrkIndy_grp
+            PasExp  = 3.174242 (mean)
+            SubStat =       10
+            PsySca  = 1.231061 (mean)
+        2.WrkIndy_grp
+            PasExp  = 2.860294 (mean)
+            SubStat =       10
+            PsySca  =    1.375 (mean)
+        3.WrkIndy_grp
+            PasExp  = 2.884804 (mean)
+            SubStat =       10
+            PsySca  = 1.441176 (mean)
+        4.WrkIndy_grp
+            PasExp  = 3.042735 (mean)
+            SubStat =       10
+            PsySca  = 1.598291 (mean)
+        6.WrkIndy_grp
+            PasExp  = 2.472222 (mean)
+            SubStat =       10
+            PsySca  = .8055556 (mean)
+
+---------------------------------------------------------------------------------------
+                      |            Delta-method
+                      |      dy/dx   std. err.      t    P>|t|     [95% conf. interval]
+----------------------+----------------------------------------------------------------
+PasExp                |
+      _at#WrkIndy_grp |
+    1#Corporate/Prof  |   5.949149   2.802136     2.12   0.034     .4406421    11.45766
+  1#Public/Essential  |   5.949149   2.802136     2.12   0.034     .4406421    11.45766
+     1#Commerce/Hosp  |   5.949149   2.802136     2.12   0.034     .4406421    11.45766
+ 1#Labor/Ag/Informal  |   5.949149   2.802136     2.12   0.034     .4406421    11.45766
+      1#Unclassified  |   5.949149   2.802136     2.12   0.034     .4406421    11.45766
+    2#Corporate/Prof  |    3.27081   2.325095     1.41   0.160    -1.299919    7.841539
+  2#Public/Essential  |    3.27081   2.325095     1.41   0.160    -1.299919    7.841539
+     2#Commerce/Hosp  |    3.27081   2.325095     1.41   0.160    -1.299919    7.841539
+ 2#Labor/Ag/Informal  |    3.27081   2.325095     1.41   0.160    -1.299919    7.841539
+      2#Unclassified  |    3.27081   2.325095     1.41   0.160    -1.299919    7.841539
+    3#Corporate/Prof  |   .5924709    1.86097     0.32   0.750     -3.06587    4.250812
+  3#Public/Essential  |   .5924709    1.86097     0.32   0.750     -3.06587    4.250812
+     3#Commerce/Hosp  |   .5924709    1.86097     0.32   0.750     -3.06587    4.250812
+ 3#Labor/Ag/Informal  |   .5924709    1.86097     0.32   0.750     -3.06587    4.250812
+      3#Unclassified  |   .5924709    1.86097     0.32   0.750     -3.06587    4.250812
+    4#Corporate/Prof  |  -2.085868   1.422461    -1.47   0.143    -4.882177    .7104399
+  4#Public/Essential  |  -2.085868   1.422461    -1.47   0.143    -4.882177    .7104399
+     4#Commerce/Hosp  |  -2.085868   1.422461    -1.47   0.143    -4.882177    .7104399
+ 4#Labor/Ag/Informal  |  -2.085868   1.422461    -1.47   0.143    -4.882177    .7104399
+      4#Unclassified  |  -2.085868   1.422461    -1.47   0.143    -4.882177    .7104399
+    5#Corporate/Prof  |  -4.764208   1.042411    -4.57   0.000    -6.813405    -2.71501
+  5#Public/Essential  |  -4.764208   1.042411    -4.57   0.000    -6.813405    -2.71501
+     5#Commerce/Hosp  |  -4.764208   1.042411    -4.57   0.000    -6.813405    -2.71501
+ 5#Labor/Ag/Informal  |  -4.764208   1.042411    -4.57   0.000    -6.813405    -2.71501
+      5#Unclassified  |  -4.764208   1.042411    -4.57   0.000    -6.813405    -2.71501
+    6#Corporate/Prof  |  -7.442547   .8080152    -9.21   0.000    -9.030963   -5.854131
+  6#Public/Essential  |  -7.442547   .8080152    -9.21   0.000    -9.030963   -5.854131
+     6#Commerce/Hosp  |  -7.442547   .8080152    -9.21   0.000    -9.030963   -5.854131
+ 6#Labor/Ag/Informal  |  -7.442547   .8080152    -9.21   0.000    -9.030963   -5.854131
+      6#Unclassified  |  -7.442547   .8080152    -9.21   0.000    -9.030963   -5.854131
+    7#Corporate/Prof  |  -10.12089   .8498221   -11.91   0.000    -11.79149   -8.450285
+  7#Public/Essential  |  -10.12089   .8498221   -11.91   0.000    -11.79149   -8.450285
+     7#Commerce/Hosp  |  -10.12089   .8498221   -11.91   0.000    -11.79149   -8.450285
+ 7#Labor/Ag/Informal  |  -10.12089   .8498221   -11.91   0.000    -11.79149   -8.450285
+      7#Unclassified  |  -10.12089   .8498221   -11.91   0.000    -11.79149   -8.450285
+    8#Corporate/Prof  |  -12.79923   1.137782   -11.25   0.000     -15.0359   -10.56255
+  8#Public/Essential  |  -12.79923   1.137782   -11.25   0.000     -15.0359   -10.56255
+     8#Commerce/Hosp  |  -12.79923   1.137782   -11.25   0.000     -15.0359   -10.56255
+ 8#Labor/Ag/Informal  |  -12.79923   1.137782   -11.25   0.000     -15.0359   -10.56255
+      8#Unclassified  |  -12.79923   1.137782   -11.25   0.000     -15.0359   -10.56255
+    9#Corporate/Prof  |  -15.47756   1.539461   -10.05   0.000    -18.50387   -12.45125
+  9#Public/Essential  |  -15.47756   1.539461   -10.05   0.000    -18.50387   -12.45125
+     9#Commerce/Hosp  |  -15.47756   1.539461   -10.05   0.000    -18.50387   -12.45125
+ 9#Labor/Ag/Informal  |  -15.47756   1.539461   -10.05   0.000    -18.50387   -12.45125
+      9#Unclassified  |  -15.47756   1.539461   -10.05   0.000    -18.50387   -12.45125
+   10#Corporate/Prof  |   -18.1559   1.987052    -9.14   0.000     -22.0621   -14.24971
+ 10#Public/Essential  |   -18.1559   1.987052    -9.14   0.000     -22.0621   -14.24971
+    10#Commerce/Hosp  |   -18.1559   1.987052    -9.14   0.000     -22.0621   -14.24971
+10#Labor/Ag/Informal  |   -18.1559   1.987052    -9.14   0.000     -22.0621   -14.24971
+     10#Unclassified  |   -18.1559   1.987052    -9.14   0.000     -22.0621   -14.24971
+---------------------------------------------------------------------------------------
+
+. 
+. marginsplot, ///
+>     x(SubStat) ///
+>     by(WrkIndy_grp) ///
+>     yline(0, lcolor(red) lpattern(dash) lwidth(medium)) ///
+>     ytitle("dWHO5/dPasEx") xtitle("MacArthur Ladder (SubStat)") ///
+>     title("ME of PasExp on WHO5 by SubStat Level — by Industry Group", ///
+>           size(small)) ///  
+>     note("Red dashed line = zero | Each panel = one industry group" ///
+>          "95% CI bands shown | Restricted N (WrkIndy_grp 1–4)", ///
+>           size(vsmall)) ///  
+>     xsize(16) ysize(8) ///  
+>     name(g_ind_interact, replace)
+
+Variables that uniquely identify margins: SubStat WrkIndy_grp
+
+. 
+. graph export "ME_industry_PasEx_by_SubStat.png", ///
+>     name(g_ind_interact) replace width(4800)
+file ME_industry_PasEx_by_SubStat.png saved as PNG format
+
+. 
+. * Combined 3-panel
+. graph combine g_ind_pas g_ind_sub g_ind_psy, ///
+>     cols(3) ///
+>     imargin(zero) ///  
+>     title("Marginal Effects by Industry Group (M3, Restricted Sample)", ///
+>           size(small)) ///  
+>     note("WrkIndy_grp 1–4 only | At group means | 95% CI | vce(robust)", ///
+>           size(vsmall)) ///  
+>     xsize(20) ysize(8) //  
+
+. 
+. graph export "ME_industry_combined3_revised.png", replace width(3600)
+file ME_industry_combined3_revised.png saved as PNG format
+
+. 
+. restore
+nothing to restore
+r(622);
+
+end of do-file
+
+r(622);
+
+. do "C:\Users\user\AppData\Local\Temp\STD8080_000001.tmp"
+
+. * Computing Standardized Betas * Elasticities on M3
+. qui sum WHO5
+
+. local sd_y  = r(sd)
+
+. local u_bar = r(mean)
+
+. 
+. qui regress WHO5 c.PasExp##c.SubStat PsySca, vce(robust)
+
+. 
+. qui sum PasExp
+
+. local pas_bar = r(mean)
+
+. local pas_sd  = r(sd)
+
+. 
+. qui sum SubStat
+
+. local lad_bar = r(mean)
+
+. local lad_sd  = r(sd)
+
+. 
+. qui sum PsySca
+
+. local cw_bar  = r(mean)
+
+. local cw_sd   = r(sd)
+
+. 
+. * Computing MEM
+. lincom PasExp + `lad_bar' * c.PasExp#c.SubStat
+
+ ( 1)  PasExp + 6.238443*c.PasExp#c.SubStat = 0
+
+------------------------------------------------------------------------------
+        WHO5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |  -8.081177   .7897732   -10.23   0.000    -9.633733   -6.528622
+------------------------------------------------------------------------------
+
+. local mem_pas = r(estimate)
+
+. 
+. lincom SubStat + `pas_bar' * c.PasExp#c.SubStat
+
+ ( 1)  SubStat + 2.941606*c.PasExp#c.SubStat = 0
+
+------------------------------------------------------------------------------
+        WHO5 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |   2.332987   .7349539     3.17   0.002     .8881968    3.777777
+------------------------------------------------------------------------------
+
+. local mem_lad = r(estimate)
+
+. 
+. local mem_cw  = _b[PsySca]
+
+. 
+. * Final Results for MEM, x-bar, Elasticities, Standardized Betas 
+. di ""
+
+
+. di "Variable      MEM        x-bar    Elasticity  Std.Beta(MEM)"
+Variable      MEM        x-bar    Elasticity  Std.Beta(MEM)
+
+. di "──────────────────────────────────────────────────────────"
+──────────────────────────────────────────────────────────
+
+. di "PasExp       " %7.3f `mem_pas' "  " %5.3f `pas_bar' "  " %8.4f (`mem_pas'*`pas_bar'/`u_bar') "  " %8.4f (`mem_pas'
+> *`pas_sd'/`sd_y')
+PasExp        -8.081  2.942   -0.4434   -0.3755
+
+. di "SubStat     " %7.3f `mem_lad' "  " %5.3f `lad_bar' "  " %8.4f (`mem_lad'*`lad_bar'/`u_bar') "  " %8.4f (`mem_lad'*
+> `lad_sd'/`sd_y')
+SubStat       2.333  6.238    0.2715    0.1947
+
+. di "PsySca      " %7.3f `mem_cw'  "  " %5.3f `cw_bar'  "  " %8.4f (`mem_cw'*`cw_bar'/`u_bar')   "  " %8.4f (`mem_cw'*`
+> cw_sd'/`sd_y')
+PsySca       -4.097  1.371   -0.1047   -0.2274
+
+. 
+. * Bootstrap CI (seeds 42 and 1,000 reps on M3)
+. set seed 42
+
+. di _newline "--- Bootstrap M3 ---"
+
+--- Bootstrap M3 ---
+
+. bootstrap _b, reps(1000) nodots: ///
+>     regress WHO5 c.PasExp##c.SubStat PsySca
+
+Linear regression                                      Number of obs =     411
+                                                       Replications  =   1,000
+                                                       Wald chi2(4)  =  483.75
+                                                       Prob > chi2   =  0.0000
+                                                       R-squared     =  0.4049
+                                                       Adj R-squared =  0.3991
+                                                       Root MSE      = 18.4648
+
+------------------------------------------------------------------------------------
+                   |   Observed   Bootstrap                         Normal-based
+              WHO5 | coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+            PasExp |   8.627488   3.286343     2.63   0.009     2.186375     15.0686
+           SubStat |   10.21161   1.345775     7.59   0.000     7.573934    12.84928
+                   |
+c.PasExp#c.SubStat |  -2.678339   .5030457    -5.32   0.000    -3.664291   -1.692388
+                   |
+            PsySca |  -4.097367   .9860962    -4.16   0.000     -6.03008   -2.164654
+             _cons |   18.98411   9.229817     2.06   0.040      .893997    37.07422
+------------------------------------------------------------------------------------
+
+. estat bootstrap, all
+
+Linear regression                               Number of obs     =        411
+                                                Replications      =       1000
+
+------------------------------------------------------------------------------
+             |    Observed               Bootstrap
+        WHO5 | coefficient       Bias    std. err.  [95% conf. interval]
+-------------+----------------------------------------------------------------
+      PasExp |   8.6274884   .2407861    3.286343    2.186375    15.0686   (N)
+             |                                       1.963657   15.22053   (P)
+             |                                       1.577521   14.59436  (BC)
+     SubStat |   10.211605   .0969573   1.3457755    7.573934   12.84928   (N)
+             |                                       7.651088   12.97979   (P)
+             |                                       7.479311   12.86864  (BC)
+c.PasExp#c~t |  -2.6783392  -.0351311   .50304566   -3.664291  -1.692388   (N)
+             |                                      -3.730732  -1.660243   (P)
+             |                                      -3.555519  -1.598866  (BC)
+      PsySca |  -4.0973669  -.0054642   .98609619    -6.03008  -2.164654   (N)
+             |                                      -6.030908  -2.263363   (P)
+             |                                      -6.030998   -2.27138  (BC)
+       _cons |   18.984107  -.6319123   9.2298174     .893997   37.07422   (N)
+             |                                       .9476669   37.33211   (P)
+             |                                       2.286053   38.65132  (BC)
+------------------------------------------------------------------------------
+Key:  N: Normal
+      P: Percentile
+     BC: Bias-corrected
+
+. 
+. * Bootstrap CI (seeds 42 and 1,000 reps on M1)
+. set seed 42
+
+. di _newline "--- Bootstrap M1 ---"
+
+--- Bootstrap M1 ---
+
+. bootstrap _b, reps(1000) nodots: ///
+>     regress WHO5 PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other
+
+Linear regression                                      Number of obs =     411
+                                                       Replications  =     999
+                                                       Wald chi2(13) =  397.01
+                                                       Prob > chi2   =  0.0000
+                                                       R-squared     =  0.3692
+                                                       Adj R-squared =  0.3485
+                                                       Root MSE      = 19.2254
+
+-------------------------------------------------------------------------------
+              |   Observed   Bootstrap                         Normal-based
+         WHO5 | coefficient  std. err.      z    P>|z|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+       PasExp |  -9.622453   .8638186   -11.14   0.000    -11.31551     -7.9294
+       PsySca |  -3.677609   1.103611    -3.33   0.001    -5.840647    -1.51457
+  CFPB_liquid |  -9.272908   9.061878    -1.02   0.306    -27.03386    8.488046
+      SubStat |   3.267703   .9043341     3.61   0.000     1.495241    5.040165
+        HHInc |  -.2127525   1.019468    -0.21   0.835    -2.210874    1.785369
+      SOC_HRS |   2.240216    1.32718     1.69   0.091     -.361009     4.84144
+     d_female |   -1.26045   2.009587    -0.63   0.531    -5.199168    2.678267
+     d_gnd_nd |   10.58192   5.871072     1.80   0.071    -.9251717    22.08901
+   d_age25_34 |   3.270438   2.301142     1.42   0.155    -1.239718    7.780595
+   d_age35_44 |   .1712509   2.643549     0.06   0.948     -5.01001    5.352512
+ d_live_alone |   .7290949   2.764697     0.26   0.792    -4.689612    6.147802
+d_live_shared |  -2.974133   2.846137    -1.04   0.296    -8.552459    2.604194
+ d_live_other |  -1.030566   3.016314    -0.34   0.733    -6.942433      4.8813
+        _cons |   66.58351   9.630508     6.91   0.000     47.70807    85.45896
+-------------------------------------------------------------------------------
+Note: One or more parameters could not be estimated in 1 bootstrap replicate;
+      standard-error estimates include only complete replications.
+
+. estat bootstrap, all
+
+Linear regression                               Number of obs     =        411
+                                                Replications      =        999
+
+------------------------------------------------------------------------------
+             |    Observed               Bootstrap
+        WHO5 | coefficient       Bias    std. err.  [95% conf. interval]
+-------------+----------------------------------------------------------------
+      PasExp |  -9.6224534   -.020712   .86381855   -11.31551    -7.9294   (N)
+             |                                      -11.37609  -8.013463   (P)
+             |                                       -11.3865  -8.043347  (BC)
+      PsySca |  -3.6776089  -.0388187   1.1036114   -5.840647   -1.51457   (N)
+             |                                      -6.066533  -1.668157   (P)
+             |                                      -5.906754  -1.637575  (BC)
+ CFPB_liquid |   -9.272908  -.4637771   9.0618779   -27.03386   8.488046   (N)
+             |                                      -28.52037   7.422983   (P)
+             |                                      -28.12269   7.489069  (BC)
+     SubStat |   3.2677028  -.0240925   .90433409    1.495241   5.040165   (N)
+             |                                       1.419533    4.98961   (P)
+             |                                        1.30232   4.978236  (BC)
+       HHInc |  -.21275253   .0162524   1.0194683   -2.210874   1.785369   (N)
+             |                                      -2.191774   1.911951   (P)
+             |                                      -2.123463    1.96949  (BC)
+     SOC_HRS |   2.2402155   .0563604   1.3271798    -.361009    4.84144   (N)
+             |                                      -.2811673    5.09083   (P)
+             |                                      -.3607817   4.968572  (BC)
+    d_female |  -1.2604502  -.0437502   2.0095867   -5.199168   2.678267   (N)
+             |                                      -5.374848   2.799264   (P)
+             |                                      -5.145552   2.875817  (BC)
+    d_gnd_nd |   10.581919   .0916294   5.8710725   -.9251717   22.08901   (N)
+             |                                      -1.662872   22.00872   (P)
+             |                                      -2.238365   21.50627  (BC)
+  d_age25_34 |   3.2704383   .0566136   2.3011424   -1.239718   7.780595   (N)
+             |                                      -1.167047   8.157606   (P)
+             |                                      -1.140897   8.157606  (BC)
+  d_age35_44 |   .17125093   .0292426   2.6435489    -5.01001   5.352512   (N)
+             |                                      -4.784465   5.530475   (P)
+             |                                      -4.730259    5.59489  (BC)
+d_live_alone |   .72909488  -.0431155   2.7646972   -4.689612   6.147802   (N)
+             |                                       -4.81876   6.114703   (P)
+             |                                      -4.787516   6.114703  (BC)
+d_live_sha~d |  -2.9741327  -.0304832   2.8461373   -8.552459   2.604194   (N)
+             |                                      -8.533357   2.601105   (P)
+             |                                      -8.491986   2.698493  (BC)
+d_live_other |  -1.0305664  -.1377464    3.016314   -6.942433     4.8813   (N)
+             |                                      -6.921354   5.069933   (P)
+             |                                      -6.620697   5.251484  (BC)
+       _cons |   66.583514   .3732151   9.6305075    47.70807   85.45896   (N)
+             |                                       48.78847    87.0696   (P)
+             |                                       48.28944   86.02642  (BC)
+------------------------------------------------------------------------------
+Key:  N: Normal
+      P: Percentile
+     BC: Bias-corrected
+Note: One or more parameters could not be estimated in 1 bootstrap replicate;
+      standard-error estimates include only complete replications.
+
+. 
+. * Cochran C and Heteroskedasticity Testing
+. di _newline "--- WHO5 variance by Gender ---"
+
+--- WHO5 variance by Gender ---
+
+. oneway WHO5 d_female, tabulate
+
+            |  Summary of WHO-5 Well-Being Index
+     Female |               (0-100)
+(ref: male) |        Mean   Std. dev.       Freq.
+------------+------------------------------------
+          0 |   53.954545   23.039796         176
+          1 |   53.361702   24.433081         235
+------------+------------------------------------
+      Total |   53.615572    23.81961         411
+
+                        Analysis of variance
+    Source              SS         df      MS            F     Prob > F
+------------------------------------------------------------------------
+Between groups      35.3686578      1   35.3686578      0.06     0.8032
+ Within groups      232587.892    409   568.674552
+------------------------------------------------------------------------
+    Total            232623.26    410   567.373806
+
+Bartlett's equal-variances test: chi2(1) =   0.6843    Prob>chi2 = 0.408
+
+. robvar WHO5, by(d_female)
+
+            |  Summary of WHO-5 Well-Being Index
+     Female |               (0-100)
+(ref: male) |        Mean   Std. dev.       Freq.
+------------+------------------------------------
+          0 |   53.954545   23.039796         176
+          1 |   53.361702   24.433081         235
+------------+------------------------------------
+      Total |   53.615572    23.81961         411
+
+W0  =  1.9602153   df(1, 409)     Pr > F = 0.16224839
+
+W50 =  1.3066543   df(1, 409)     Pr > F = 0.25366996
+
+W10 =  1.6382489   df(1, 409)     Pr > F = 0.2012914
+
+. qui sum WHO5 if d_female == 0
+
+. scalar v_m = r(Var)
+
+. qui sum WHO5 if d_female == 1
+
+. scalar v_f = r(Var)
+
+. scalar C_gender = max(v_m, v_f) / (v_m + v_f)
+
+. di "  Cochran C (Gender, k=2): C = " %6.4f C_gender
+  Cochran C (Gender, k=2): C = 0.5293
+
+. 
+. di _newline "--- WHO5 variance by Age Group ---"
+
+--- WHO5 variance by Age Group ---
+
+. gen byte age_3cat = .
+(411 missing values generated)
+
+. replace age_3cat = 1 if age_raw == "18 — 24 ปี"
+(117 real changes made)
+
+. replace age_3cat = 2 if age_raw == "25 — 34 ปี"
+(165 real changes made)
+
+. replace age_3cat = 3 if age_raw == "35 — 44 ปี"
+(129 real changes made)
+
+. label define lage3 1 "18-24" 2 "25-34" 3 "35-44"
+
+. label values age_3cat lage3
+
+. 
+. oneway WHO5 age_3cat, tabulate
+
+            |  Summary of WHO-5 Well-Being Index
+            |               (0-100)
+   age_3cat |        Mean   Std. dev.       Freq.
+------------+------------------------------------
+      18-24 |   55.350427   23.157376         117
+      25-34 |   54.957576   24.378707         165
+      35-44 |   50.325581   23.535599         129
+------------+------------------------------------
+      Total |   53.615572    23.81961         411
+
+                        Analysis of variance
+    Source              SS         df      MS            F     Prob > F
+------------------------------------------------------------------------
+Between groups      2045.59925      2   1022.79963      1.81     0.1650
+ Within groups      230577.661    408   565.141326
+------------------------------------------------------------------------
+    Total            232623.26    410   567.373806
+
+Bartlett's equal-variances test: chi2(2) =   0.3924    Prob>chi2 = 0.822
+
+. robvar WHO5, by(age_3cat)
+
+            |  Summary of WHO-5 Well-Being Index
+            |               (0-100)
+   age_3cat |        Mean   Std. dev.       Freq.
+------------+------------------------------------
+      18-24 |   55.350427   23.157376         117
+      25-34 |   54.957576   24.378707         165
+      35-44 |   50.325581   23.535599         129
+------------+------------------------------------
+      Total |   53.615572    23.81961         411
+
+W0  =  0.76974139   df(2, 408)     Pr > F = 0.46380419
+
+W50 =  1.07589678   df(2, 408)     Pr > F = 0.34195724
+
+W10 =  0.98386791   df(2, 408)     Pr > F = 0.37474744
+
+. 
+. scalar sv_a = 0
+
+. scalar mx_a = 0
+
+. forval g = 1/3 {
+  2.     qui sum WHO5 if age_3cat == `g'
+  3.     di "  Age group `g': n=" r(N) ", s2=" %7.2f r(Var)
+  4.     scalar sv_a = sv_a + r(Var)
+  5.     if r(Var) > mx_a scalar mx_a = r(Var)
+  6. }
+  Age group 1: n=117, s2= 536.26
+  Age group 2: n=165, s2= 594.32
+  Age group 3: n=129, s2= 553.92
+
+. di "  Cochran C (Age, k=3): C = " %6.4f mx_a/sv_a " | critical ~0.727"
+  Cochran C (Age, k=3): C = 0.3528 | critical ~0.727
+
+. 
+. di _newline "--- Breusch-Pagan and White on M1 residuals ---"
+
+--- Breusch-Pagan and White on M1 residuals ---
+
+. qui regress WHO5 PasExp PsySca CFPB_liquid SubStat HHInc SOC_HRS ///
+>     d_female d_gnd_nd d_age25_34 d_age35_44 ///
+>     d_live_alone d_live_shared d_live_other, vce(robust)
+
+. estat hettest
+hettest not appropriate after estimation using robust or clustered VCE
+r(498);
+
+end of do-file
+
+r(498);
+
+. do "C:\Users\user\AppData\Local\Temp\STD8080_000002.tmp"
+
+. estat imtest, white
+
+White's test
+H0: Homoskedasticity
+Ha: Unrestricted heteroskedasticity
+
+   chi2(84) = 178.93
+Prob > chi2 = 0.0000
+
+Cameron & Trivedi's decomposition of IM-test
+
+--------------------------------------------------
+              Source |       chi2     df         p
+---------------------+----------------------------
+  Heteroskedasticity |     178.93     84    0.0000
+            Skewness |      31.06     13    0.0033
+            Kurtosis |       1.64      1    0.1997
+---------------------+----------------------------
+               Total |     211.63     98    0.0000
+--------------------------------------------------
+
+. 
+end of do-file
+
+. do "C:\Users\user\AppData\Local\Temp\STD8080_000003.tmp"
+
+. di _newline "--- Cochran C summary ---"
+
+--- Cochran C summary ---
+
+. di "  Gender (k=2): C = " %6.4f C_gender   " | critical ~0.975"
+  Gender (k=2): C = 0.5293 | critical ~0.975
+
+. di "  Age    (k=3): C = " %6.4f mx_a/sv_a  " | critical ~0.727"
+  Age    (k=3): C = 0.3528 | critical ~0.727
+
+. 
+. * ======================================================
+. * Profiling High Status (6-10) VS Low Status (1-5) Groups
+. 
+. * Creating binary variable
+. gen high_status = (SubStat >= 6) if !missing(SubStat)
+
+. label define status_lbl 0 "Low Status (1-5)" 1 "High Status (6-10)"
+
+. label values high_status status_lbl
+
+. 
+. tabulate WrkIndy_grp high_status, row column
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+|  row percentage   |
+| column percentage |
++-------------------+
+
+                  |      high_status
+      WrkIndy_grp | Low Statu  High Stat |     Total
+------------------+----------------------+----------
+   Corporate/Prof |        30         58 |        88 
+                  |     34.09      65.91 |    100.00 
+                  |     19.87      22.31 |     21.41 
+------------------+----------------------+----------
+ Public/Essential |        50         86 |       136 
+                  |     36.76      63.24 |    100.00 
+                  |     33.11      33.08 |     33.09 
+------------------+----------------------+----------
+    Commerce/Hosp |        53         83 |       136 
+                  |     38.97      61.03 |    100.00 
+                  |     35.10      31.92 |     33.09 
+------------------+----------------------+----------
+Labor/Ag/Informal |        15         24 |        39 
+                  |     38.46      61.54 |    100.00 
+                  |      9.93       9.23 |      9.49 
+------------------+----------------------+----------
+     Unclassified |         3          9 |        12 
+                  |     25.00      75.00 |    100.00 
+                  |      1.99       3.46 |      2.92 
+------------------+----------------------+----------
+            Total |       151        260 |       411 
+                  |     36.74      63.26 |    100.00 
+                  |    100.00     100.00 |    100.00 
+
+. 
+. tabulate HHInc high_status, row column
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+|  row percentage   |
+| column percentage |
++-------------------+
+
+ Household |
+    income |
+   bracket |
+   (1=<10k |
+      THB, |
+   7=>150k |      high_status
+      THB) | Low Statu  High Stat |     Total
+-----------+----------------------+----------
+         1 |        16          2 |        18 
+           |     88.89      11.11 |    100.00 
+           |     10.60       0.77 |      4.38 
+-----------+----------------------+----------
+         2 |        24         16 |        40 
+           |     60.00      40.00 |    100.00 
+           |     15.89       6.15 |      9.73 
+-----------+----------------------+----------
+         3 |        33         37 |        70 
+           |     47.14      52.86 |    100.00 
+           |     21.85      14.23 |     17.03 
+-----------+----------------------+----------
+         4 |        72         72 |       144 
+           |     50.00      50.00 |    100.00 
+           |     47.68      27.69 |     35.04 
+-----------+----------------------+----------
+         5 |         0         87 |        87 
+           |      0.00     100.00 |    100.00 
+           |      0.00      33.46 |     21.17 
+-----------+----------------------+----------
+         6 |         4         33 |        37 
+           |     10.81      89.19 |    100.00 
+           |      2.65      12.69 |      9.00 
+-----------+----------------------+----------
+         7 |         2         13 |        15 
+           |     13.33      86.67 |    100.00 
+           |      1.32       5.00 |      3.65 
+-----------+----------------------+----------
+     Total |       151        260 |       411 
+           |     36.74      63.26 |    100.00 
+           |    100.00     100.00 |    100.00 
+
+. 
+. tabstat PsySca, by(high_status) stat(mean sd N) format(%6.2f)
+
+Summary for variables: PsySca
+Group variable: high_status 
+
+     high_status |      Mean        SD         N
+-----------------+------------------------------
+Low Status (1-5) |      2.80      0.83    151.00
+High Status (6-1 |      0.54      0.70    260.00
+-----------------+------------------------------
+           Total |      1.37      1.32    411.00
+------------------------------------------------
+
+. 
+. tabstat OSSS3, by(high_status) stat(mean sd N) format(%6.2f)
+
+Summary for variables: OSSS3
+Group variable: high_status 
+
+     high_status |      Mean        SD         N
+-----------------+------------------------------
+Low Status (1-5) |      0.44      0.18    151.00
+High Status (6-1 |      0.37      0.19    260.00
+-----------------+------------------------------
+           Total |      0.40      0.19    411.00
+------------------------------------------------
+
+. 
+. tabstat PasExp SubStat, by(WrkIndy_grp) stat(mean sd N) format(%6.2f)
+
+Summary statistics: Mean, SD, N
+Group variable: WrkIndy_grp 
+
+     WrkIndy_grp |    PasExp   SubStat
+-----------------+--------------------
+  Corporate/Prof |      3.17      6.64
+                 |      1.19      2.07
+                 |     88.00     88.00
+-----------------+--------------------
+Public/Essential |      2.86      6.01
+                 |      0.98      1.88
+                 |    136.00    136.00
+-----------------+--------------------
+   Commerce/Hosp |      2.88      6.18
+                 |      1.16      2.07
+                 |    136.00    136.00
+-----------------+--------------------
+Labor/Ag/Informa |      3.04      6.31
+                 |      1.14      2.03
+                 |     39.00     39.00
+-----------------+--------------------
+    Unclassified |      2.47      6.33
+                 |      0.94      1.15
+                 |     12.00     12.00
+-----------------+--------------------
+           Total |      2.94      6.24
+                 |      1.11      1.99
+                 |    411.00    411.00
+--------------------------------------
+
+. 
+. tabstat PasExp SubStat, by(HHInc) stat(mean sd N) format(%6.2f)
+
+Summary statistics: Mean, SD, N
+Group variable: HHInc (Household income bracket (1=<10k THB, 7=>150k THB))
+
+   HHInc |    PasExp   SubStat
+---------+--------------------
+       1 |      2.83      4.22
+         |      0.72      1.11
+         |     18.00     18.00
+---------+--------------------
+       2 |      2.80      4.38
+         |      0.79      2.25
+         |     40.00     40.00
+---------+--------------------
+       3 |      2.87      5.51
+         |      1.11      1.19
+         |     70.00     70.00
+---------+--------------------
+       4 |      3.03      5.48
+         |      1.06      1.18
+         |    144.00    144.00
+---------+--------------------
+       5 |      3.05      8.21
+         |      1.31      1.07
+         |     87.00     87.00
+---------+--------------------
+       6 |      2.60      8.30
+         |      1.16      1.61
+         |     37.00     37.00
+---------+--------------------
+       7 |      3.18      7.80
+         |      1.13      1.90
+         |     15.00     15.00
+---------+--------------------
+   Total |      2.94      6.24
+         |      1.11      1.99
+         |    411.00    411.00
+------------------------------
+
+. 
+. * Ploting Industry Group into Interaction Surface
+. twoway (scatter SubStat PasExp if WrkIndy_grp == 1, mcolor(navy) msymbol(O)) ///
+>        (scatter SubStat PasExp if WrkIndy_grp == 2, mcolor(forest_green) msymbol(D)) ///
+>        (scatter SubStat PasExp if WrkIndy_grp == 3, mcolor(cranberry) msymbol(T)) ///
+>        (scatter SubStat PasExp if WrkIndy_grp == 4, mcolor(gs10) msymbol(X)), ///
+>        ytitle("Subjective Status (1-10)") xtitle("Passive Exposure (Frequency)") ///
+>        legend(order(1 "Public/Essential" 2 "Commerce/Hosp" 3 "Labor/Ag/Informal" 4 "Unclassified") row(2)) ///
+>        title("Demographic Distribution Across the Interaction Space")
+
+. * ======================================================
+. 
+. save "group03_WellBeing.dta", replace
+(file group03_WellBeing.dta not found)
+file group03_WellBeing.dta saved
+
+. log close
+      name:  <unnamed>
+       log:  D:\StataNow19\group03_WellBeing.log
+  log type:  text
+ closed on:  16 Apr 2026, 15:13:43
+------------------------------------------------------------------------------------------------------------------------
