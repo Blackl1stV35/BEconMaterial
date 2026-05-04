@@ -8,3 +8,6 @@ Collection of lectures, homeworks, projects in Bachelor of Economics (English Pr
 
 ### Message to visitors
 If you are a student here, feel free if you would like to contribute and drop your preferred materials for someone's future use :)
+
+### Inquiry
+kanokphan.s@ku.th
